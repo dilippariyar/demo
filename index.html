@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormSubmit.co Test Form</title>
+</head>
+<body>
+
+    <h1>Contact Us (FormSubmit.co Test)</h1>
+
+    <form action="https://formsubmit.co/chappalbajar@gmail.com" method="POST">
+
+        <input type="hidden" name="_subject" value="New Submission from My Portfolio!">
+
+        <input type="hidden" name="_next" value="https://yourdomain.com/thanks.html">
+
+        <input type="hidden" name="_cc" value="copy@email.com"> 
+
+        <input type="hidden" name="_blacklist" value="spam phrase 1, promo code, bad word">
+
+        <input type="hidden" name="_captcha" value="false">
+
+        <input type="hidden" name="_autoresponse" value="Thank you for your message! We have received your submission and will get back to you shortly.">
+        
+        <input type="hidden" name="_template" value="table">
+
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="email">Your Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="5" required></textarea><br><br>
+
+        <button type="submit">Send Message</button>
+
+    </form>
+
+</body>
+</html>
