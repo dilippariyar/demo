@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FormSubmit.co Test Form</title>
+    <title>FormSubmit.co Advanced Test Form</title>
 </head>
 <body>
 
     <h1>Contact Us (FormSubmit.co Test)</h1>
 
-    <form action="https://formsubmit.co/chappalbajar@gmail.com" method="POST">
+    <form action="https://formsubmit.co/chappalbajar@gmail.com" method="POST" enctype="multipart/form-data">
 
-        <input type="hidden" name="_subject" value="New Submission from My Portfolio!">
+        <input type="hidden" name="_subject" value="New Submission from My Portfolio (Advanced Form)!">
 
-        <input type="hidden" name="_next" value="https://dilippariyar.github.io/demo/thanks.html">
+        <input type="hidden" name="_next" value="https://yourdomain.com/thanks.html">
 
         <input type="hidden" name="_cc" value="copy@email.com"> 
 
@@ -21,90 +21,142 @@
 
         <input type="hidden" name="_captcha" value="false">
 
-        <input type="hidden" name="_autoresponse" value="Thank you for your message! We have received your submission and will get back to you shortly. I am Dilip autoresponse">
+        <input type="hidden" name="_autoresponse" value="Thank you for your message! We have received your submission and will get back to you shortly. This is an automated response from Dilip's portfolio.">
         
         <input type="hidden" name="_template" value="table">
 
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
+        <p>
+            <label for="fullName">Full Name:</label><br>
+            <input type="text" id="fullName" name="full_name" required><br>
+        </p>
 
-        <label for="email">Your Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+        <p>
+            <label for="email">Your Email:</label><br>
+            <input type="email" id="email" name="email" required><br>
+        </p>
 
-        <label for="message">Message:</label><br>
-        <textarea id="message" name="message" rows="5" required></textarea><br><br>
+        <p>
+            <label for="mobileNo">Mobile Number:</label><br>
+            <input type="tel" id="mobileNo" name="mobile_number" pattern="[0-9]{10}" title="Please enter a 10-digit mobile number (e.g., 9876543210)" required><br>
+            <small>Format: 10-digit number (e.g., 9876543210)</small>
+        </p>
 
-        <!-- added additional form element -->
-            <fieldset>
-      <legend>Gender:</legend>
-      <label for="genderMale">Male</label><br>
-      <input type="radio" id="genderMale" name="gender" value="Male" required><br>
-      <label for="genderFemale">Female</label>
-      <input type="radio" id="genderFemale" name="gender" value="Female" required><br>
-      <label for="genderOther">Other</label>
-      <input type="radio" id="genderOther" name="gender" value="Other"> (Optional)
-    </fieldset>
+        <p>
+            <label for="message">Your Message:</label><br>
+            <textarea id="message" name="message" rows="5" required></textarea>
+        </p>
 
-            <label for="mobileNo">Mobile No:</label>
-    <input type="tel" id="mobileNo" name="mobileNo" pattern="[0-9]{10}" required><br>
-    <small>Enter 10-digit mobile number (e.g., 9876543210)</small>
-
-    <label for="qualification">Education/Qualification:</label>
-    <input type="text" id="qualification" name="qualification" required>
-
-    <fieldset>
-      <legend>Languages Known:</legend>
-      <div class="checkbox-container">
-        <label for="languageEnglish">English</label>
-        <input type="checkbox" id="languageEnglish" name="languages[]" value="English">
-      </div><br>
-      <div class="checkbox-container">
-        <label for="languageHindi">Hindi</label>
-        <input type="checkbox" id="languageHindi" name="languages[]" value="Hindi">
-      </div><br>
-      <div class="checkbox-container">
-        <label for="languagePunjabi">Punjabi</label>
-        <input type="checkbox" id="languagePunjabi" name="languages[]" value="Punjabi">
-      </div><br>
-      <small>Select all that apply.</small>
-    </fieldset>
-
-    <fieldset>
-      <legend>Computer Level Experience:</legend>
-      <div class="checkbox-container">
-        <label for="experienceBasic">Basic</label>
-        <input type="checkbox" id="experienceBasic" name="computer experience[]" value="Basic">
-      </div><br>
-      <div class="checkbox-container">
-        <label for="experienceIntermediate">Intermediate</label>
-        <input type="checkbox" id="experienceIntermediate" name="computer experience[]" value="Intermediate">
-      </div><br>
-      <div class="checkbox-container">
-        <label for="experienceAdvanced">Advanced</label>
-        <input type="checkbox" id="experience" name="computer experience[]" value="advance">
-      </div><br>
-      <small>Select all that apply.</small>
-    </fieldset>
-
-    <label for="birthDate">Birth Date (Indian Calendar):</label>
-    <inpute type="date" id="birthdate" name="birthdate" value="">
-      
-<label for="tiime">Time of birth</label>
-        <input type="time" id="time" name="tie of birth" value="">
-
-        <label for="color">Select color:</label>
-        <input type="color" id="color" name="color" value="">
+        <p>
+            <label for="contactMethod">Preferred Contact Method:</label><br>
+            <select id="contactMethod" name="preferred_contact_method" required>
+                <option value="">--Please choose an option--</option>
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="whatsapp">WhatsApp</option>
+            </select>
+        </p>
         
-    <label for="photo">Photo Upload (JPG, max 2MB):</label>
-    <input type="file" id="photo" name="photo" accept="image/jpeg" required>
+        <fieldset>
+            <legend>Gender:</legend>
+            <p>
+                <input type="radio" id="genderMale" name="gender" value="Male" required>
+                <label for="genderMale">Male</label>
+            </p>
+            <p>
+                <input type="radio" id="genderFemale" name="gender" value="Female" required>
+                <label for="genderFemale">Female</label>
+            </p>
+            <p>
+                <input type="radio" id="genderOther" name="gender" value="Other">
+                <label for="genderOther">Other</label> (Optional)
+            </p>
+        </fieldset>
 
-    <label for="pdfUpload">PDF Upload (max 5MB):</label>
-    <input type="file" id="pdfUpload" name="pdfUpload" accept="application/pdf" required>
+        <p>
+            <label for="qualification">Education/Qualification:</label><br>
+            <input type="text" id="qualification" name="qualification" required>
+        </p>
 
-    <label for="address">Address:</label>
-    <textarea id="address" name="address" rows="5" required></textarea>
+        <fieldset>
+            <legend>Languages Known:</legend>
+            <p>
+                <input type="checkbox" id="languageEnglish" name="languages[]" value="English">
+                <label for="languageEnglish">English</label>
+            </p>
+            <p>
+                <input type="checkbox" id="languageHindi" name="languages[]" value="Hindi">
+                <label for="languageHindi">Hindi</label>
+            </p>
+            <p>
+                <input type="checkbox" id="languagePunjabi" name="languages[]" value="Punjabi">
+                <label for="languagePunjabi">Punjabi</label>
+            </p>
+            <small>Select all that apply.</small>
+        </fieldset>
 
+        <fieldset>
+            <legend>Computer Level Experience:</legend>
+            <p>
+                <input type="checkbox" id="experienceBasic" name="computer_experience[]" value="Basic">
+                <label for="experienceBasic">Basic</label>
+            </p>
+            <p>
+                <input type="checkbox" id="experienceIntermediate" name="computer_experience[]" value="Intermediate">
+                <label for="experienceIntermediate">Intermediate</label>
+            </p>
+            <p>
+                <input type="checkbox" id="experienceAdvanced" name="computer_experience[]" value="Advanced">
+                <label for="experienceAdvanced">Advanced</label>
+            </p>
+            <small>Select all that apply.</small>
+        </fieldset>
 
+        <p>
+            <label for="birthDate">Birth Date (Indian Calendar):</label><br>
+            <input type="date" id="birthDate" name="birth_date">
+        </p>
+        
+        <p>
+            <label for="birthTime">Time of Birth:</label><br>
+            <input type="time" id="birthTime" name="birth_time">
+        </p>
+
+        <p>
+            <label for="favoriteColor">Select Favorite Color:</label><br>
+            <input type="color" id="favoriteColor" name="favorite_color">
+        </p>
+
+        <p>
+            <label for="imageUploads">Upload Images (JPG, PNG, GIF, WebP, SVG - Multiple Files):</label><br>
+            <input type="file" id="imageUploads" name="image_files[]" accept="image/*" multiple>
+            <small>Accepts: JPG, PNG, GIF, WebP, SVG. Select multiple files.</small>
+        </p>
+
+        <p>
+            <label for="documentUploads">Upload Documents (PDF, Word, Excel, PPT - Multiple Files):</label><br>
+            <input type="file" id="documentUploads" name="document_files[]" 
+                   accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation" multiple>
+            <small>Accepts: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX. Select multiple files.</small>
+        </p>
+
+        <p>
+            <label for="audioUpload">Upload Audio File (MP3, WAV, OGG):</label><br>
+            <input type="file" id="audioUpload" name="audio_file" accept="audio/*">
+            <small>Accepts: MP3, WAV, OGG.</small>
+        </p>
+
+        <p>
+            <label for="videoUpload">Upload Video File (MP4, WebM, OGG):</label><br>
+            <input type="file" id="videoUpload" name="video_file" accept="video/*">
+            <small>Accepts: MP4, WebM, OGG.</small>
+        </p>
+
+        <p>
+            <label for="address">Address:</label><br>
+            <textarea id="address" name="address" rows="5" required></textarea>
+        </p>
+
+        <br>
         <button type="submit">Send Message</button>
 
     </form>
