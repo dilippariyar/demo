@@ -11,13 +11,13 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://dilippariyar.github.io/">
 
-    <link rel="icon" href="https://dilippariyar.github.io/images/fabicon.ico">
-    <link rel="apple-touch-icon" href="https://dilippariyar.github.io/images/apple-touch.png">
+    <link rel="icon" href="https://placehold.co/32x32/0d0d1a/00e6ff?text=DP" type="image/png">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/0d0d1a/00e6ff?text=DP">
 
     <meta property="og:title" content="Dilip Pariyar | SEO & Web Accessibility Specialist">
     <meta property="og:description" content="Portfolio of Dilip Pariyar, a professional specializing in SEO, Web Accessibility (WCAG 2.2), and Digital Marketing.">
-    <meta property="og:image" content="https://dilippariyar.github.io/images/logo_og.png">
-    <meta property="og:url" content="https://dilippariyar.github.io/demo">
+    <meta property="og:image" content="https://dilippariyar.github.io/images/dilip.jpg">
+    <meta property="og:url" content="https://dilippariyar.github.io/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Dilip Pariyar's Portfolio">
 
@@ -131,7 +131,7 @@
         .content-section { padding: 80px 20px; max-width: 1200px; margin: 0 auto; opacity: 0; transform: translateY(40px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
         .content-section.in-view { opacity: 1; transform: translateY(0); }
         .section-title { font-size: 2.8rem; margin-bottom: 50px; text-align: center; background: linear-gradient(45deg, #ff00cc, #00e6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
+        
         /* About Section */
         #about p { font-size: 1.1rem; color: #c0c0c0; text-align: center; max-width: 800px; margin: 0 auto; }
         #about p a { color: #fff; font-weight: 600; text-decoration: none; }
@@ -205,7 +205,7 @@
         .project-links a:hover { color: #ff00cc; }
         .project-links i { margin-right: 5px; }
 
-        /* NEW: Testimonials Section */
+        /* Testimonials Section */
         .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
         .testimonial-card { background: rgba(255, 255, 255, 0.05); padding: 30px; border-radius: 15px; border-left: 5px solid #00e6ff; }
         .testimonial-text { font-style: italic; color: #c0c0c0; margin-bottom: 20px; }
@@ -214,7 +214,13 @@
         .testimonial-author-info .name { font-weight: 700; display: block; }
         .testimonial-author-info .title { font-size: 0.9rem; color: #a0a0a0; }
         
-        /* CTA Section */
+        /* CTA Section & Buttons */
+        .cta-button {
+            display: inline-flex; align-items: center; justify-content: center; padding: 14px 35px; font-size: 1.1rem; font-weight: 600; color: #fff; text-decoration: none; border-radius: 50px; position: relative; overflow: hidden; z-index: 1; border: 2px solid transparent; background: linear-gradient(135deg, #00e6ff, #ff00cc); background-size: 200% 200%; transition: all 0.4s ease; box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .cta-button i { margin-right: 10px; font-size: 1.2rem; }
+        .cta-button:hover { color: #fff; transform: translateY(-3px) scale(1.05); box-shadow: 0 12px 25px rgba(0, 230, 255, 0.4), 0 12px 25px rgba(255, 0, 204, 0.4); background-position: right center; }
+        .cta-button:active { transform: translateY(0) scale(1); }
         .cta-section { text-align: center; margin: 60px 0; }
         .contact-cta-button { display: inline-block; padding: 16px 32px; font-size: 1.15em; font-weight: 600; text-decoration: none; border-radius: 50px; transition: all 0.3s ease; cursor: pointer; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); letter-spacing: 0.5px; text-transform: uppercase; border: 2px solid transparent; }
         .contact-cta-button i { margin-right: 8px; vertical-align: middle; }
@@ -244,7 +250,7 @@
         @media (max-width: 768px) {
             .main-header { padding: 15px 20px; }
             .nav-toggle { display: block; }
-            .main-nav { position: fixed; top: 0; right: 0; width: 80%; max-width: 320px; height: 100vh; background: rgba(18, 18, 31, 0.98); flex-direction: column; justify-content: center; align-items: center; transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1); box-shadow: -5px 0 30px rgba(0,0,0,0.5); }
+            .main-nav { position: fixed; top: 0; right: 0; width: 70%; max-width: 320px; height: 100vh; background: rgba(18, 18, 31, 0.98); flex-direction: column; justify-content: center; align-items: center; transform: translateX(100%); transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1); box-shadow: -5px 0 30px rgba(0,0,0,0.5); }
             .main-nav.active { transform: translateX(0); }
             .main-nav ul { flex-direction: column; }
             .main-nav ul li a { display: block; padding: 15px; font-size: 1.2rem; }
@@ -261,7 +267,6 @@
             .call-me-button { display: block; margin: 15px auto; width: 80%; max-width: 300px; }
             .contact-cta-button:focus { outline: 3px solid #218838; }
         }
-
     </style>
 </head>
 <body>
@@ -289,11 +294,11 @@
             <div id="particles-js"></div>
             <div class="intro-content">
                 <div class="profile-image-container">
-                    <img src="dilippariyar.github.io/images/dilip.jpg" alt="A professional picture of Dilip Pariyar"> 
+                    <img src="https://dilippariyar.github.io/images/dilip.jpg" alt="A professional picture of Dilip Pariyar"> 
                 </div>
                 <h1 id="main-heading">Dilip Pariyar</h1>
                 <p class="subtitle">Digital Marketing & Web Accessibility Professional</p>
-                <a href="dilippariyar.github.io/assets/Dilip_Pariyar_Resume.pdf" class="cta-button" download="Dilip_Pariyar_Resume.pdf" aria-label="Download Dilip Pariyar's Resume in PDF format">
+                <a href="assets/Dilip_Pariyar_Resume.pdf" class="cta-button" download="Dilip_Pariyar_Resume.pdf" aria-label="Download Dilip Pariyar's Resume in PDF format">
                     <i class="fas fa-download"></i> Download Resume
                 </a>
             </div>
@@ -487,7 +492,7 @@
                         <img src="https://placehold.co/600x400/334/FFF?text=Project" alt="A Chrome Extension UI showing Accessibility data." class="project-image">
                         <div class="project-content">
                             <h3>A11y Quick Check</h3>
-                            <p>Problem: Developers often miss basic accessibility issues. Solution: I created a lightweight Chrome extension to perform rapid checks for common a11y errors like heading skips, missing alt text, and improper form labels, promoting inclusive development.</p>
+                            <p>Problem: Developers often miss basic accessibility issues. Solution: I created a lightweight Chrome extension to perform rapid checks for common a11y errors like heading level skips, missing alt text, and improper form labels, promoting inclusive development.</p>
                             <div class="project-links">
                                 <a href="#" aria-label="View A11y Quick Check on GitHub"><i class="fab fa-github"></i> GitHub</a>
                                 <a href="#" aria-label="View in Chrome Store"><i class="fab fa-chrome"></i> Live Demo</a>
@@ -681,4 +686,3 @@
     </script>
 </body>
 </html>
-
