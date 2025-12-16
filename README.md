@@ -1,4 +1,4 @@
-H# demo
+# demo
 
 > **Note:** This repository is **not** intended for use as a source code base or for production projects.  
 > **Purpose:** The `dilippariyar/demo` repository exists **solely for accessibility testing**.
