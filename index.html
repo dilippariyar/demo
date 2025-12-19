@@ -305,7 +305,7 @@
             </div>
         </section>
 
-        <section id="about" class="content-section" aria-labelledby="about-title">
+        <section id="about" class="content-section" aria-labelledby="about-title" role="button">
             <h2 class="section-title" id="about-title">About Me</h2>
             <p>
                 As a dedicated Digital Marketing and Web Accessibility Professional with a degree in Marketing, I bridge the gap between technical optimization and human-centered design. I specialize in driving organic growth through comprehensive SEO strategies while championing digital inclusion by implementing WCAG 2.2 and ARIA standards. My goal is to create web experiences that are not only discoverable and high-performing but also accessible and empowering for every user.
@@ -495,8 +495,8 @@
                             <h3>A11y Quick Check</h3>
                             <p>Problem: Developers often miss basic accessibility issues. Solution: I created a lightweight Chrome extension to perform rapid checks for common a11y errors like heading level skips, missing alt text, and improper form labels, promoting inclusive development.</p>
                             <div class="project-links">
-                                <a href="#" aria-label="View A11y Quick Check on GitHub"><i class="fab fa-github"></i> GitHub</a>
-                                <a href="#" aria-label="View in Chrome Store"><i class="fab fa-chrome"></i> Live Demo</a>
+                                <a href="https://github.com/dilippariyar/a11y-quick-check" aria-label="View A11y Quick Check on GitHub"><i class="fab fa-github"></i> GitHub</a>
+                                <a href="https://dilippariyar.github.io/a11y-quick-check" aria-label="View live demo of a11y quick check"><i class="fab fa-chrome"></i> Live Demo</a>
                             </div>
                         </div>
                     </li>
@@ -506,7 +506,7 @@
                             <h3>Accessible Web Page Redesign</h3>
                             <p>Problem: An existing webpage was unusable for screen reader users. Solution: I re-engineered the page using semantic HTML and ARIA landmarks, transforming it into a fully compliant and navigable experience that achieved a 100% Lighthouse accessibility score.</p>
                             <div class="project-links">
-                                <a href="#" aria-label="View Details of the Accessible Web Page Redesign project"><i class="fas fa-file-alt"></i> View Details</a>
+                                <a href="accessibile_web_page" aria-label="View Details of the Accessible Web Page Redesign project"><i class="fas fa-file-alt"></i> View Details</a>
                             </div>
                         </div>
                     </li>
@@ -562,11 +562,11 @@
                     </div>
                     <div>
                         <label for="email">Your Email</label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                        <input type="email" id="email" name="email" placeholder="Enter your email address" required autocomplete="email">
                     </div>
                     <div>
                         <label for="phone">Mobile Number</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Enter your mobile number" required>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your mobile number" required autocomplete="tel">
                     </div>
                     <div>
                         <label for="message">Message</label>
