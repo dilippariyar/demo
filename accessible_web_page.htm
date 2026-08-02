@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Webpage Layout - 1</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth; /* Smooth scrolling for anchor links */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gray-50 text-gray-800; /* Default background and text color */
+        }
+        /* Style for the skip-to-content link - visually hidden until focused */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #007bff;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            border-radius: 0 0 8px 8px;
+            @apply focus:top-0; /* Make it visible on focus */
+        }
+        /* Basic table styling for readability */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #e2e8f0; /* Tailwind's border-gray-200 */
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th {
+            @apply bg-blue-100 text-blue-700 font-semibold;
+        }
+        /* Style for focusable elements like audio/video controls */
+        audio, video, iframe {
+            @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 rounded-lg;
+        }
+        /* Common form element styling */
+        .form-input-group label {
+            @apply block text-gray-700 text-sm font-bold mb-2;
+        }
+        .form-input-group input[type="text"],
+        .form-input-group input[type="email"],
+        .form-input-group textarea,
+        .form-input-group select,
+        .form-input-group input[type="password"] {
+            @apply shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight
+                   focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent;
+        }
+        .form-input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .fieldset-group {
+            @apply border border-gray-300 p-4 rounded-lg mb-4;
+        }
+        .fieldset-group legend {
+            @apply text-lg font-semibold text-gray-800 px-2;
+        }
+        .radio-option {
+            @apply flex items-center mb-2;
+        }
+        .radio-option input[type="radio"],
+        .checkbox-option input[type="checkbox"] {
+            @apply mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500;
+        }
+        .radio-option label,
+        .checkbox-option label {
+            @apply text-gray-700;
+        }
+        /* Modal specific styling */
+        #accessibleDialog {
+            /* flexbox for centering, hidden by default */
+            display: none;
+        }
+        #accessibleDialog.is-open {
+            display: flex; /* Show when open */
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        #accessibleDialog .dialog-content {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive Navigation Specific Styles */
+        /* Hide hamburger button by default on larger screens (md breakpoint and up) */
+        .md\\:hidden-nav-button {
+            display: none;
+        }
+        /* Show the full navigation menu by default on larger screens */
+        .md\\:show-nav-menu {
+            display: flex; /* or block depending on layout needs */
+        }
+        /* Hide the navigation menu by default on smaller screens */
+        .hidden-nav-menu {
+            display: none;
+        }
+
+        /* Search results message */
+        #searchResultsMessage {
+            @apply text-lg font-semibold text-center mt-6 p-4 rounded-lg bg-yellow-100 text-yellow-800; /* Always present, hidden by aria-hidden */
+        }
+        /* Carousel specific styles */
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel-slide {
+            min-width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        /* Sortable table header button styling */
+        .sortable-header-button {
+            @apply w-full text-left p-0 border-0 bg-transparent text-blue-700 font-semibold cursor-pointer;
+            white-space: nowrap;
+        }
+        .sort-icon {
+            @apply ml-2 transition-transform duration-200;
+        }
+
+        /* Autocomplete specific styles */
+        .autocomplete-container {
+            position: relative;
+        }
+        .autocomplete-list {
+            @apply absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .autocomplete-list li {
+            @apply px-4 py-2 cursor-pointer hover:bg-blue-100 focus:bg-blue-100;
+        }
+        .autocomplete-list li.focused {
+            @apply bg-blue-200 outline-none;
+        }
+
+        /* Drag and Drop specific styles */
+        .drag-list-container {
+            @apply flex flex-col md:flex-row justify-center items-start gap-6;
+        }
+        .drag-list {
+            @apply border-2 border-dashed border-gray-300 rounded-lg p-4 w-full md:w-64 min-h-[150px] bg-gray-50;
+        }
+        .drag-list.drag-over {
+            @apply border-blue-500 bg-blue-50;
+        }
+        .drag-item {
+            @apply bg-white border border-gray-200 rounded-md px-4 py-2 mb-2 cursor-grab shadow-sm
+                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300;
+        }
+        .drag-item[aria-grabbed="true"] {
+            @apply opacity-70 border-blue-500 bg-blue-100;
+        }
+        .drag-item.dragging {
+            @apply opacity-50; /* Visual feedback for the item being dragged */
+        }
+        .drag-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Chart specific styles */
+        .chart-container {
+            @apply flex flex-col items-center p-6 bg-white rounded-lg shadow-md max-w-2xl mx-auto;
+        }
+        .chart-svg {
+            @apply w-full h-64; /* Set a default height for the SVG */
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            overflow: visible; /* Allows labels/tooltips to extend if needed */
+        }
+        .chart-bar {
+            fill: #3b82f6; /* Tailwind blue-500 */
+            transition: fill 0.2s ease-in-out;
+        }
+        .chart-bar:focus {
+            outline: none; /* Remove default focus outline */
+            fill: #2563eb; /* Darker blue-600 on focus */
+            stroke: #1d4ed8; /* Even darker blue-700 for outline */
+            stroke-width: 2px;
+        }
+        .chart-label {
+            font-size: 0.75rem; /* text-xs */
+            fill: #4b5563; /* text-gray-600 */
+        }
+        .chart-axis-line {
+            stroke: #d1d5db; /* gray-300 */
+            stroke-width: 1px;
+        }
+
+.accordion-button[aria-expanded="true"] .accordion-icon {
+            transform: rotate(45deg);
+        }
+#toastContainer.visible {
+            opacity: 1;
+        }
+input[aria-invalid="true"] {
+            border-color: #ef4444; /* Tailwind's red-500 */
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body role="none"aria-description="please press (Alt + P) to pause and resume automatic live caresoul slideshow">
+    <a href="#main-content" class="skip-link sr-only focus:not-sr-only">Skip to main content</a>
+    <a href="#page-footer" class="skip-link sr-only focus:not-sr-only left-32">Skip to footer</a>
+
+
+    <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-lg">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center relative">
+            <div class="flex justify-between items-center w-full sm:w-auto mb-4 sm:mb-0">
+                <a href="#" class="inline-flex items-center text-3xl font-bold tracking-tight" aria-label="Website Home">
+                    <img src="https://placehold.co/40x40/FFFFFF/000000?text=Logo" alt="Website Logo" class="mr-2 rounded-full">
+                    Your Company Name
+                </a>
+
+                <button id="navToggleButton" class="sm:hidden text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 rounded-md p-2"
+                        aria-controls="mainNavigationMenu" aria-expanded="false" aria-label="Toggle main navigation">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav id="mainNavigationMenu" aria-label="Main Navigation"
+                 class="hidden-nav-menu w-full sm:w-auto sm:block mt-4 sm:mt-0 md:show-nav-menu">
+                <ul class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-6 text-lg">
+                    <li><a href="#" class="block px-3 py-2 rounded-md hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300" aria-current="page">Home</a></li>
+                    <li><a href="#" class="block px-3 py-2 rounded-md hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">About Us</a></li>
+                    <li><a href="#" class="block px-3 py-2 rounded-md hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">Services</a></li>
+                    <li><a href="#" class="block px-3 py-2 rounded-md hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">Contact</a></li>
+                </ul>
+            </nav>
+
+            <search class="mt-4 sm:mt-0 sm:ml-6 w-full sm:w-auto">
+                <form id="pageSearchForm" action="#" method="get" role="search" class="flex flex-col sm:flex-row items-stretch sm:items-center">
+                    <label for="siteSearch" class="sr-only">Search the website</label>
+                    <input type="search" id="siteSearch" name="q" placeholder="Search this page..."
+                           class="w-full sm:w-48 px-3 py-2 rounded-md border border-gray-300 text-gray-900
+                                  focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent mb-2 sm:mb-0 sm:mr-2"
+                           aria-label="Search site content">
+                    <button type="submit" class="bg-blue-800 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded-md shadow
+                                                 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300"
+                            aria-label="Submit search query">
+                        Search
+                    </button>
+                </form>
+            </search>
+        </div>
+    </header>
+
+    <main id="main-content" class="container mx-auto my-8 p-4 bg-white shadow-lg rounded-lg">
+        <h1 class="text-4xl font-extrabold text-blue-700 mb-6 text-center">Welcome to Our Accessible Page!</h1>
+
+        <div id="searchResultsMessage" role="status" aria-live="polite" aria-hidden="true"></div>
+
+        <section aria-labelledby="intro-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="intro-heading" class="text-3xl font-bold text-gray-800 mb-4">Understanding Accessibility</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Web accessibility means designing and developing websites so that people with disabilities can perceive, understand, navigate, and interact with the Web. This includes people with visual, auditory, physical, speech, cognitive, and neurological disabilities.
+            </p>
+            <p class="text-lg leading-relaxed">
+                By focusing on accessibility, we create a more inclusive internet for everyone. Features like clear semantic structure, proper labeling, and keyboard navigability are crucial.
+            </p>
+        </section>
+
+        <section aria-labelledby="features-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="features-heading" class="text-3xl font-bold text-gray-800 mb-4">Key Accessible Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <article class="p-4 bg-gray-100 rounded-md shadow-sm" aria-label="Semantic HTML Explained">
+                    <h3 class="text-xl font-semibold text-blue-600 mb-2">Semantic HTML</h3>
+                    <p class="text-base">
+                        Using HTML5 elements like `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, and `<footer>` provides inherent meaning to the structure of your content, which is invaluable for assistive technologies.
+                    </p>
+                </article>
+                <article class="p-4 bg-gray-100 rounded-md shadow-sm" aria-label="ARIA Attributes Explained">
+                    <h3 class="text-xl font-semibold text-blue-600 mb-2">ARIA Attributes</h3>
+                    <p class="text-base">
+                        ARIA (Accessible Rich Internet Applications) attributes help provide additional semantic information to elements when native HTML isn't sufficient, improving the experience for screen reader users. For instance, `aria-label` or `aria-labelledby`.
+                    </p>
+                </article>
+                <article class="p-4 bg-gray-100 rounded-md shadow-sm" aria-label="Keyboard Navigation Explained">
+                    <h3 class="text-xl font-semibold text-blue-600 mb-2">Keyboard Navigation</h3>
+                    <p class="text-base">
+                        Ensuring all interactive elements are reachable and operable via keyboard (using Tab, Enter, Spacebar) is vital for users who cannot use a mouse. This involves proper tab order and visible focus indicators.
+                    </p>
+                </article>
+                <article class="p-4 bg-gray-100 rounded-md shadow-sm" aria-label="Alt Text for Images Explained">
+                    <h3 class="text-xl font-semibold text-blue-600 mb-2">Alt Text for Images</h3>
+                    <p class="text-base">
+                        Providing descriptive `alt` text for images (`<img src="..." alt="A descriptive phrase for the image content">`) allows screen readers to convey the visual information to users who cannot see the image.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section aria-labelledby="table-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="table-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessibility Best Practices Summary</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                This table summarizes key accessibility considerations for common web elements.
+            </p>
+            <div class="overflow-x-auto rounded-lg shadow-md">
+                <table class="min-w-full bg-white">
+                    <caption class="text-lg font-semibold text-gray-700 p-3 bg-gray-100 border-b border-gray-200 rounded-t-lg">Core Accessibility Principles and Practices</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Element</th>
+                            <th scope="col">Principle</th>
+                            <th scope="col">Best Practice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Element">Images</td>
+                            <td data-label="Principle">Perceivable</td>
+                            <td data-label="Best Practice">Provide descriptive `alt` text for all meaningful images. Decorative images can have `alt=""`.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Element">Forms</td>
+                            <td data-label="Principle">Operable</td>
+                            <td data-label="Best Practice">Use `<label>` elements linked to form inputs, and clear error messages.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Element">Navigation</td>
+                            <td data-label="Principle">Understandable</td>
+                            <td data-label="Best Practice">Use consistent navigation, clear link text, and skip-to-content links.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Element">Video/Audio</td>
+                            <td data-label="Principle">Perceivable</td>
+                            <td data-label="Best Practice">Provide captions for audio, and captions/audio descriptions for video.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Element">Color Contrast</td>
+                            <td data-label="Principle">Perceivable</td>
+                            <td data-label="Best Practice">Ensure sufficient color contrast between text and background (WCAG AA/AAA).</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Element">Keyboard Interaction</td>
+                            <td data-label="Principle">Operable</td>
+                            <td data-label="Best Practice">All interactive elements must be keyboard-accessible with visible focus indicators.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section aria-labelledby="sortable-table-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="sortable-table-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Data Table with Sorting & Pagination</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                This dynamic table allows for sorting and pagination, with real-time announcements for screen readers.
+            </p>
+            <div class="flex flex-col items-center">
+                <div id="tableStatus" role="status" aria-live="polite" class="sr-only"></div>
+                <div class="overflow-x-auto rounded-lg shadow-md w-full">
+                    <table class="min-w-full bg-white">
+                        <caption class="sr-only">Information about popular programming languages, including their name, year of creation, and average salary.</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col" id="col-name" aria-sort="none">
+                                    <button class="sortable-header-button focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-md" data-sort-by="name">
+                                        Language <span class="sort-icon"></span>
+                                    </button>
+                                </th>
+                                <th scope="col" id="col-year" aria-sort="none">
+                                    <button class="sortable-header-button focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-md" data-sort-by="year">
+                                        Year <span class="sort-icon"></span>
+                                    </button>
+                                </th>
+                                <th scope="col" id="col-salary" aria-sort="none">
+                                    <button class="sortable-header-button focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-md" data-sort-by="salary">
+                                        Avg. Salary (INR) <span class="sort-icon"></span>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Table rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex justify-between items-center w-full mt-4">
+                    <button id="prevPageBtn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed
+                                                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 transition duration-300" disabled aria-label="Go to previous page">
+                        Previous
+                    </button>
+                    <div id="paginationInfo" class="text-sm text-gray-600" aria-live="polite"></div>
+                    <button id="nextPageBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed
+                                                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 transition duration-300" aria-label="Go to next page">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="audio-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="audio-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Audio Player</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Always provide controls for audio and consider offering a transcript for users with hearing impairments or those who prefer to read.
+            </p>
+            <div class="flex flex-col items-center p-4 bg-gray-100 rounded-lg shadow-md max-w-lg mx-auto">
+                <p class="sr-only" id="audio-description">A short informational audio clip about web accessibility.</p>
+                <audio controls aria-describedby="audio-description" class="w-full">
+                    <source src="https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3" type="audio/mpeg">
+                    <track kind="captions" srclang="en" label="English captions" src="placeholder_audio_captions.vtt">
+                    Your browser does not support the audio element. Please download the audio file.
+                    <a href="https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3" download class="text-blue-600 hover:underline">Download Audio</a>
+                </audio>
+                <div class="mt-3 text-sm text-gray-600">
+                    <p><em>(This is a royalty-free audio example. Replace with your own content if needed.)</em></p>
+                    <p>For full accessibility, a transcript should be provided below the player.</p>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="video-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="video-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Video Player</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Videos should include `controls`, `captions` (via `<track>` elements), and ideally `audio descriptions` for visual content, if applicable.
+            </p>
+            <div class="flex flex-col items-center p-4 bg-gray-100 rounded-lg shadow-md max-w-2xl mx-auto">
+                <p class="sr-only" id="video-description">A short video explaining accessible design principles from W3C.</p>
+                <video id="video" controls aria-label="Video Content" class="rounded-lg shadow-md w-full">
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    <track kind="captions" srclang="en" label="English captions" src="placeholder_video_captions.vtt">
+                    <track kind="descriptions" srclang="en" label="English descriptions" src="placeholder_video_descriptions.vtt">
+                    Your browser does not support the video tag.
+                    <a href="https://www.w3schools.com/html/mov_bbb.mp4" download class="text-blue-600 hover:underline">Download Video</a>
+                </video>
+                <div class="mt-3 text-sm text-gray-600">
+                    <p><em>(Demo video from W3C Schools. Replace with your own content.)</em></p>
+                    <p>Ensure captions and audio descriptions are provided for full accessibility.</p>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="iframe-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="iframe-heading" class="text-3xl font-bold text-gray-800 mb-4">Embedding Content with Iframes</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                When using iframes, always provide a descriptive `title` attribute so screen reader users understand the embedded content.
+            </p>
+            <div class="flex justify-center p-4 bg-gray-100 rounded-lg shadow-md">
+                <iframe src="https://www.w3.org/WAI/fundamentals/accessibility-intro/"
+                        title="Introduction to Web Accessibility on W3C WAI website"
+                        width="100%" height="400px" class="rounded-lg shadow-inner border border-gray-200"
+                        loading="lazy">
+                    <p>Your browser does not support iframes. You can access the content directly at <a href="https://www.w3.org/WAI/fundamentals/accessibility-intro/" class="text-blue-600 hover:underline">W3C Web Accessibility Initiative</a>.</p>
+                </iframe>
+            </div>
+        </section>
+
+        <section aria-labelledby="buttons-heading" class="page-section mb-8 p-6">
+            <h2 id="buttons-heading" class="text-3xl font-bold text-gray-800 mb-4">Variety of Accessible Buttons</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Buttons should have clear labels, visible focus states, and appropriate ARIA attributes for complex interactions.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-300"
+                        aria-label="Confirm your selection">
+                    Confirm Action
+                </button>
+                <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-300"
+                        aria-pressed="false" id="toggleButton">
+                    Toggle State
+                </button>
+                <button class="bg-gray-400 text-gray-700 font-bold py-3 px-6 rounded-full shadow-lg cursor-not-allowed"
+                        aria-disabled="true" disabled>
+                    Disabled Button
+                </button>
+                <a href="#main-content" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300 inline-flex items-center justify-center"
+                   role="button" aria-label="Go back to the top of the main content area">
+                    Back to Top (Link as Button)
+                </a>
+            </div>
+        </section>
+
+        <section aria-labelledby="image-example-heading" class="page-section mb-8 p-6">
+            <h2 id="image-example-heading" class="text-3xl font-bold text-gray-800 mb-4">Example: Image with Alt Text</h2>
+            <figure class="flex flex-col items-center">
+                <img src="https://placehold.co/600x400/A0EE00/FFFFFF?text=Accessible+Design"
+                     alt="A placeholder image with the text 'Accessible Design' written on it, representing the concept of creating user-friendly interfaces for all."
+                     class="w-full md:w-3/4 lg:w-1/2 h-auto rounded-lg shadow-md mb-3"
+                     loading="lazy"
+                >
+                <figcaption class="text-sm text-gray-600 italic">
+                    Image illustrating the importance of accessible design.
+                </figcaption>
+            </figure>
+        </section>
+
+        <section aria-labelledby="tabs-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="tabs-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Tabs</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Tabs organize content into multiple sections, displaying one at a time. Proper ARIA roles and keyboard navigation are crucial for accessibility.
+            </p>
+            <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md">
+                <div role="tablist" aria-label="Content Categories" class="flex border-b border-gray-200">
+                    <button id="tab1" role="tab" aria-selected="true" aria-controls="panel1" tabindex="0"
+                            class="px-6 py-3 text-lg font-medium text-blue-700 border-b-2 border-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 rounded-tl-lg">
+                        Productivity
+                    </button>
+                    <button id="tab2" role="tab" aria-selected="false" aria-controls="panel2" tabindex="-1"
+                            class="px-6 py-3 text-lg font-medium text-gray-700 hover:text-blue-700 hover:border-blue-600 border-b-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">
+                        Creativity
+                    </button>
+                    <button id="tab3" role="tab" aria-selected="false" aria-controls="panel3" tabindex="-1"
+                            class="px-6 py-3 text-lg font-medium text-gray-700 hover:text-blue-700 hover:border-blue-600 border-b-2 border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 rounded-tr-lg">
+                        Learning
+                    </button>
+                </div>
+                <div id="panel1" role="tabpanel" aria-labelledby="tab1" class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Boost Your Productivity</h3>
+                    <p class="text-gray-700">
+                        Discover powerful tools and techniques to optimize your workflow, manage your time effectively, and achieve your goals with greater efficiency. From task management apps to time-blocking strategies, unlock your full potential.
+                    </p>
+                </div>
+                <div id="panel2" role="tabpanel" aria-labelledby="tab2" hidden class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Unleash Your Inner Artist</h3>
+                    <p class="text-gray-700">
+                        Explore resources and inspiration to fuel your creative endeavors. Whether you're into writing, design, music, or visual arts, find new ways to express yourself and bring your ideas to life.
+                    </p>
+                </div>
+                <div id="panel3" role="tabpanel" aria-labelledby="tab3" hidden class="p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Continuous Learning Journey</h3>
+                    <p class="text-gray-700">
+                        Expand your knowledge and skills with curated content across various subjects. From online courses to insightful articles, embrace lifelong learning and stay ahead in a rapidly evolving world.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="carousel-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="carousel-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Image Carousel</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                Image carousels can be challenging for accessibility. This example demonstrates keyboard navigation, pause/play, and clear state indicators.
+            </p>
+            <div id="imageCarousel" role="group" aria-roledescription="image carousel" aria-label="Featured Images Carousel"
+                 class="relative w-full max-w-2xl mx-auto overflow-hidden rounded-lg shadow-xl bg-gray-100 p-4">
+
+                <div class="sr-only" aria-live="polite" id="carousel-live-region"></div>
+
+                <div id="carouselTrack" class="carousel-track">
+                    <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="1 of 3">
+                        <img src="https://placehold.co/800x400/FF5733/FFFFFF?text=Slide+1:+Nature" alt="Scenic view of a lush green forest with sunlight filtering through the trees." class="w-full h-auto rounded-lg">
+                        <p class="text-center text-gray-700 mt-2">Explore the beauty of nature.</p>
+                    </div>
+                    <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="2 of 3" aria-hidden="true">
+                        <img src="https://placehold.co/800x400/33FF57/FFFFFF?text=Slide+2:+Cityscape" alt="Modern cityscape with tall buildings and bustling streets at dusk." class="w-full h-auto rounded-lg">
+                        <p class="text-center text-gray-700 mt-2">Discover vibrant urban landscapes.</p>
+                    </div>
+                    <div class="carousel-slide" role="group" aria-roledescription="slide" aria-label="3 of 3" aria-hidden="true">
+                        <img src="https://placehold.co/800x400/3357FF/FFFFFF?text=Slide+3:+Abstract" alt="Abstract art with swirling blue, purple, and yellow colors." class="w-full h-auto rounded-lg">
+                        <p class="text-center text-gray-700 mt-2">Dive into abstract art.</p>
+                    </div>
+                </div>
+
+                <div class="absolute inset-y-0 left-0 flex items-center">
+                    <button id="carouselPrev" aria-label="Previous slide"
+                            class="bg-gray-800 bg-opacity-75 text-white p-3 rounded-r-lg hover:bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 transition duration-300">
+                        &lt;
+                    </button>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center">
+                    <button id="carouselNext" aria-label="Next slide"
+                            class="bg-gray-800 bg-opacity-75 text-white p-3 rounded-l-lg hover:bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 transition duration-300">
+                        &gt;
+                    </button>
+                </div>
+
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center items-center space-x-2">
+                    <button id="carouselPlayPause" aria-label="Pause slideshow" aria-pressed="true"
+                            class="bg-gray-800 bg-opacity-75 text-white p-2 rounded-full hover:bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 transition duration-300"
+accesskey="p">
+                        ⏸️
+                    </button>
+                    <div role="group" aria-label="Slide indicators">
+                        <button class="carousel-dot bg-blue-600 w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300" aria-label="Go to slide 1" aria-current="true"></button>
+                        <button class="carousel-dot bg-gray-400 w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300" aria-label="Go to slide 2" aria-current="false"></button>
+                        <button class="carousel-dot bg-gray-400 w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300" aria-label="Go to slide 3" aria-current="false"></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="auth-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="auth-heading" class="text-3xl font-bold text-gray-800 mb-4">User Authentication</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                This section demonstrates an accessible login form with username, password, and a show/hide password feature.
+            </p>
+            <form action="#" method="POST" class="max-w-md mx-auto p-6 bg-blue-50 rounded-lg shadow-md">
+                <div class="form-input-group mb-4">
+                    <label for="authUsername">Username</label>
+                    <input type="text" id="authUsername" name="username" placeholder="Enter your username" autocomplete="username" aria-required="true" required>
+                </div>
+
+                <div class="form-input-group mb-6 relative">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" name="password" placeholder="Enter your password" autocomplete="current-password" aria-required="true" required>
+                    <button type="button" id="togglePasswordVisibility" class="absolute right-3 top-9 text-gray-500 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full p-1"
+                            aria-label="Show password as plain text." aria-pressed="false">
+                        👁️ </button>
+                </div>
+
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 w-full">
+                    Log In
+                </button>
+            </form>
+        </section>
+
+        <!-- New Section: Accessible Autocomplete/Combobox -->
+        <section aria-labelledby="autocomplete-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="autocomplete-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Autocomplete/Combobox</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                This example demonstrates an accessible autocomplete input with dynamically updated suggestions and screen reader announcements. Type in a fruit name to see suggestions (e.g., "app", "ban").
+            </p>
+            <div class="autocomplete-container max-w-md mx-auto">
+                <label for="fruitInput" class="block text-gray-700 text-sm font-bold mb-2">Search for a fruit:</label>
+                <input type="text" id="fruitInput" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="fruit-list"
+                       class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight
+                              focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent">
+                <ul id="fruit-list" role="listbox" class="autocomplete-list hidden">
+                    <!-- Suggestions will be inserted here -->
+                </ul>
+                <div id="autocompleteStatus" role="status" aria-live="polite" class="sr-only"></div>
+            </div>
+        </section>
+
+<section aria-labelledby="accordion-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="accordion-heading" class="text-3xl font-bold text-gray-800 mb-4">Frequently Asked Questions (Accordion)</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                This accordion demonstrates how to manage collapsible content. Use Arrow Up/Down to navigate between questions and Enter/Space to open/close them.
+            </p>
+            <div id="accordionGroup" class="space-y-2">
+                <div class="accordion-item border border-gray-200 rounded-lg">
+                    <h3 class="accordion-header text-lg font-semibold m-0">
+                        <button id="accordion-button-1" type="button" aria-expanded="false"
+                                class="accordion-button flex items-center justify-between w-full p-4 text-left text-gray-800 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-t-lg"
+                                aria-controls="accordion-panel-1">
+                            <span>What is Web Accessibility?</span>
+                            <span class="accordion-icon transition-transform duration-200 transform">&plus;</span>
+                        </button>
+                    </h3>
+                    <div id="accordion-panel-1" role="region" aria-labelledby="accordion-button-1"
+                         class="accordion-panel p-4 border-t border-gray-200" hidden>
+                        <p>Web accessibility means that websites, tools, and technologies are designed and developed so that people with disabilities can use them. More specifically, people can perceive, understand, navigate, and interact with the Web.</p>
+                    </div>
+                </div>
+                <div class="accordion-item border border-gray-200 rounded-lg">
+                    <h3 class="accordion-header text-lg font-semibold m-0">
+                        <button id="accordion-button-2" type="button" aria-expanded="false"
+                                class="accordion-button flex items-center justify-between w-full p-4 text-left text-gray-800 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                                aria-controls="accordion-panel-2">
+                            <span>Why is ARIA important?</span>
+                            <span class="accordion-icon transition-transform duration-200 transform">&plus;</span>
+                        </button>
+                    </h3>
+                    <div id="accordion-panel-2" role="region" aria-labelledby="accordion-button-2"
+                         class="accordion-panel p-4 border-t border-gray-200" hidden>
+                        <p>ARIA (Accessible Rich Internet Applications) helps make web content and web applications more accessible. It works by allowing you to add attributes to HTML elements that define roles, states, and properties, which can be interpreted by assistive technologies like screen readers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- NEW SECTION: Accessible Drag and Drop Lists -->
+        <section aria-labelledby="drag-drop-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+            <h2 id="drag-drop-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Drag and Drop Lists</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                This example demonstrates an accessible drag and drop interface where you can move items between two lists using both mouse and keyboard.
+            </p>
+            <div class="drag-list-container">
+                <!-- Live region for announcing drag and drop events -->
+                <div id="dragDropStatus" role="status" aria-live="assertive" class="sr-only"></div>
+
+                <div class="flex flex-col items-center">
+                    <h3 id="list1-label" class="text-xl font-semibold text-gray-800 mb-2">List A</h3>
+                    <ul id="list1" class="drag-list" aria-labelledby="list1-label" aria-dropeffect="move" tabindex="-1">
+                        <!-- Items populated by JavaScript -->
+                    </ul>
+                </div>
+                <div class="flex flex-col items-center">
+                    <h3 id="list2-label" class="text-xl font-semibold text-gray-800 mb-2">List B</h3>
+                    <ul id="list2" class="drag-list" aria-labelledby="list2-label" aria-dropeffect="move" tabindex="-1">
+                        <!-- Items populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Accessible Charts/Graphs -->
+<section aria-labelledby="chart-heading" class="page-section mb-8 p-6 border-b border-gray-200">
+    <h2 id="chart-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Data Visualization: Bar Chart</h2>
+    <p class="text-lg leading-relaxed mb-4">
+        This section demonstrates how to make a bar chart accessible by providing a textual summary, a data table, and interactive, keyboard-navigable elements.
+    </p>
+
+    <div class="chart-container">
+        <h3 id="chart-title" class="text-xl font-semibold text-gray-800 mb-2">Monthly Sales Data (INR)</h3>
+        <p id="chart-summary" class="text-gray-700 text-sm mb-4">
+            Summary: This bar chart displays sales data for the first four months of the year. Sales peaked in March at ₹220, followed by a slight dip in April to ₹180. January and February show steady sales at ₹150 and ₹170 respectively.
+        </p>
+
+        <div id="chartStatus" role="status" aria-live="polite" class="sr-only"></div>
+
+        <svg id="salesChart" class="chart-svg" role="img" viewBox="0 0 400 200" tabindex="0">
+            <title id="chart-accessible-title">Bar chart showing monthly sales data.</title>
+            <desc id="chart-accessible-desc">A bar chart showing sales figures for January (₹150), February (₹170), March (₹220), and April (₹180).
+                The X-axis represents months and the Y-axis represents sales in INR.
+            </desc>
+
+            <g class="chart-grid">
+                <line x1="40" y1="180" x2="380" y2="180" class="chart-axis-line" />
+                <text x="30" y="185" text-anchor="end" class="chart-label">₹0</text>
+                <line x1="40" y1="130" x2="380" y2="130" class="chart-axis-line" />
+                <text x="30" y="135" text-anchor="end" class="chart-label">₹100</text>
+                <line x1="40" y1="80" x2="380" y2="80" class="chart-axis-line" />
+                <text x="30" y="85" text-anchor="end" class="chart-label">₹200</text>
+                <line x1="40" y1="20" x2="40" y2="180" class="chart-axis-line" />
+            </g>
+
+            <rect class="chart-bar" id="bar-jan" x="60" y="180" width="50" height="0" data-value="150" data-month="January" tabindex="0"
+                  aria-label="Sales for January: ₹150" />
+            <text x="85" y="195" text-anchor="middle" class="chart-label">Jan</text>
+
+            <rect class="chart-bar" id="bar-feb" x="140" y="180" width="50" height="0" data-value="170" data-month="February" tabindex="0"
+                  aria-label="Sales for February: ₹170" />
+            <text x="165" y="195" text-anchor="middle" class="chart-label">Feb</text>
+
+            <rect class="chart-bar" id="bar-mar" x="220" y="180" width="50" height="0" data-value="220" data-month="March" tabindex="0"
+                  aria-label="Sales for March: ₹220" />
+            <text x="245" y="195" text-anchor="middle" class="chart-label">Mar</text>
+
+            <rect class="chart-bar" id="bar-apr" x="300" y="180" width="50" height="0" data-value="180" data-month="April" tabindex="0"
+                  aria-label="Sales for April: ₹180" />
+            <text x="325" y="195" text-anchor="middle" class="chart-label">Apr</text>
+        </svg>
+
+        <h4 class="text-lg font-semibold text-gray-800 mt-6 mb-2">Detailed Sales Data Table</h4>
+        <div class="overflow-x-auto rounded-lg shadow-md w-full">
+            <table class="min-w-full bg-white">
+                <caption class="sr-only">Monthly sales data presented in the bar chart above.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Month</th>
+                        <th scope="col">Sales (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Month">January</td>
+                        <td data-label="Sales">₹150</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Month">February</td>
+                        <td data-label="Sales">₹170</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Month">March</td>
+                        <td data-label="Sales">₹220</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Month">April</td>
+                        <td data-label="Sales">₹180</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+        <section aria-labelledby="dialog-heading" class="page-section mb-8 p-6">
+            <h2 id="dialog-heading" class="text-3xl font-bold text-gray-800 mb-4">Accessible Modal Dialog Example</h2>
+            <p class="text-lg leading-relaxed mb-4">
+                This section demonstrates an accessible modal dialog, ensuring proper focus management and ARIA attributes.
+            </p>
+            <div class="text-center">
+                <button id="openDialogButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-300"
+                        aria-haspopup="dialog" aria-expanded="false">
+                    Open Accessible Dialog
+                </button>
+            </div>
+
+            <div id="accessibleDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" aria-describedby="dialogDescription"
+                 class="fixed inset-0 z-50 flex items-center justify-center hidden">
+                <div class="absolute inset-0 bg-gray-900 opacity-75" aria-hidden="true"></div>
+
+                <div class="bg-white p-8 rounded-lg shadow-xl relative w-11/12 md:w-2/3 lg:w-1/2 max-w-2xl transform scale-95 transition-transform duration-300 ease-out dialog-content">
+                    <h3 id="dialogTitle" class="text-2xl font-bold text-blue-700 mb-4">Important Accessibility Information</h3>
+                    <p id="dialogDescription" class="text-gray-700 mb-6">
+                        This is an example of an accessible modal dialog. Key features include:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 mb-6">
+                        <li>**Keyboard Trap:** Focus is kept within the dialog while it's open.</li>
+                        <li>**Focus Management:** Initial focus moves to the first interactive element (or close button).</li>
+                        <li>**Escape Key:** Pressing 'Escape' closes the dialog.</li>
+                        <li>**ARIA Attributes:** `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby` are used.</li>
+                        <li>**Overlay:** A semi-transparent overlay is used to indicate the rest of the page is inactive.</li>
+                    </ul>
+                    <p class="text-gray-700 mb-6">
+                        Always ensure dialogs are keyboard navigable and communicate their state clearly to assistive technologies.
+                    </p>
+                    <div class="flex justify-end space-x-4">
+                        <button id="cancelDialogButton" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full shadow transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
+                            Cancel
+                        </button>
+                        <button id="confirmDialogButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">
+                            Confirm
+                        </button>
+                        <button id="closeDialogButton" class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-3xl font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 rounded-full w-10 h-10 flex items-center justify-center"
+                                aria-label="Close dialog">
+                            &times;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="cta-heading" class="page-section p-6 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <h2 id="cta-heading" class="text-3xl font-bold text-blue-700 mb-4">Ready to Make Your Site Accessible?</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                If you have questions or need further assistance in making your digital content accessible, don't hesitate to reach out!
+            </p>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300"
+                    aria-label="Learn more about web accessibility">
+                Learn More
+            </button>
+        </section>
+
+        <section aria-labelledby="form-heading" class="page-section mb-8 p-6">
+            <h2 id="form-heading" class="text-3xl font-bold text-gray-800 mb-4">Example Accessible Form</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                This form demonstrates how to implement various input types with proper labels and accessibility considerations.
+            </p>
+            <form action="#" method="POST" class="max-w-xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
+                <div class="form-input-group mb-4">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="John Doe" aria-required="true" required>
+                </div>
+
+                <div class="form-input-group mb-4">
+                    <label for="emailAddress">Email Address</label>
+                    <input type="email" id="emailAddress" name="emailAddress" placeholder="john.doe@example.com" aria-required="true" required>
+                </div>
+
+                <div class="form-input-group mb-4">
+                    <label for="message">Your Message</label>
+                    <textarea id="message" name="message" rows="5" placeholder="Enter your message here..." aria-required="true" required></textarea>
+                </div>
+
+                <div class="form-input-group mb-4">
+                    <label for="subject">Choose a Subject</label>
+                    <select id="subject" name="subject">
+                        <option value="">Please select...</option>
+                        <option value="general">General Inquiry</option>
+                        <option value="support">Technical Support</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <fieldset class="fieldset-group mb-4">
+                    <legend>Preferred Contact Method</legend>
+                    <div class="radio-option">
+                        <input type="radio" id="contactEmail" name="contactMethod" value="email">
+                        <label for="contactEmail">Email</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="contactPhone" name="contactMethod" value="phone">
+                        <label for="contactPhone">Phone</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="contactMail" name="contactMethod" value="mail">
+                        <label for="contactMail">Mail</label>
+                    </div>
+                </fieldset>
+
+                <div class="checkbox-option mb-6">
+                    <input type="checkbox" id="newsletter" name="newsletter">
+                    <label for="newsletter">Sign me up for the newsletter</label>
+                </div>
+
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105
+                                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 w-full">
+                    Submit Form
+                </button>
+            </form>
+        </section>
+<section aria-labelledby="toast-heading" class="page-section mb-8 p-6 text-center border-b border-gray-200">
+            <h2 id="toast-heading" class="text-3xl font-bold text-gray-800 mb-4">Toast Notification</h2>
+            <p class="text-lg leading-relaxed mb-6">Click the button to trigger a dynamic, assertive alert that will be announced immediately by screen readers.</p>
+            <button id="showToastBtn" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-300">
+                Show Success Message
+            </button>
+        </section>
+
+        <div id="toastContainer" role="alert" aria-live="assertive"
+             class="fixed bottom-5 right-5 z-50 p-4 rounded-lg shadow-lg bg-green-600 text-white opacity-0 transition-opacity duration-500 pointer-events-none">
+             </div>
+<section aria-labelledby="dropdown-heading" class="page-section mb-8 p-6 text-center">
+            <h2 id="dropdown-heading" class="text-3xl font-bold text-gray-800 mb-4">Dropdown Menu Button</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                This demonstrates an accessible menu button. Use Enter, Space, or Arrow Down to open. Use arrows to navigate, Enter to select, and Escape to close.
+            </p>
+            <div id="menuContainer" class="relative inline-block text-left">
+                <button id="menuButton" type="button" aria-haspopup="true" aria-expanded="false"
+                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Options
+                    <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div id="menu" role="menu" aria-orientation="vertical" aria-labelledby="menuButton"
+                     class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
+                    <div class="py-1" role="none">
+                        <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
+                        <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+                        <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<section aria-labelledby="validation-form-heading" class="page-section mb-8 p-6">
+            <h2 id="validation-form-heading" class="text-3xl font-bold text-gray-800 mb-4">Form with Live Validation</h2>
+            <p class="text-lg leading-relaxed mb-6">
+                This form demonstrates accessible error handling. Submit with empty fields to see the error summary and inline messages.
+            </p>
+            <form id="validationForm" action="#" method="POST" class="max-w-xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md" novalidate>
+                <div id="errorSummary" role="alert" class="hidden p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded" tabindex="-1">
+                    <h3 id="errorSummaryHeading" class="font-bold">Please correct the following errors:</h3>
+                    <ul id="errorSummaryList" class="mt-2 list-disc list-inside"></ul>
+                </div>
+
+                <div class="form-input-group mb-4">
+                    <label for="regName">Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="regName" name="name" class="form-input" autocomplete="name" required>
+                    <div id="nameError" class="error-message text-red-600 text-sm mt-1"></div>
+                </div>
+
+                <div class="form-input-group mb-4">
+                    <label for="regEmail">Email <span class="text-red-500">*</span></label>
+                    <input type="email" id="regEmail" name="email" class="form-input" autocomplete="email" required>
+                    <div id="emailError" class="error-message text-red-600 text-sm mt-1"></div>
+                </div>
+                
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300">
+                    Register
+                </button>
+            </form>
+        </section>
+
+    </main>
+    <footer id="page-footer" class="bg-gray-800 text-white p-6 mt-8 rounded-t-lg shadow-lg" role="contentinfo">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-xl font-bold mb-4">About Us</h3>
+                <p class="text-gray-300 text-center md:text-left">
+                    Committed to creating an inclusive digital world, one accessible website at a time.
+                </p>
+            </div>
+
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                <nav aria-label="Footer Quick Links">
+                    <ul class="flex flex-col space-y-2">
+                        <li><a href="#" class="hover:underline text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:underline text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1">Terms of Service</a></li>
+                        <li><a href="#" class="hover:underline text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1">Sitemap</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="flex flex-col items-center md:items-start">
+                <h3 class="text-xl font-bold mb-4">Connect With Us</h3>
+                <nav aria-label="Social Media Links">
+                    <ul class="flex space-x-4">
+                        <li><a href="#" class="text-gray-300 hover:text-blue-400 text-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1" aria-label="Follow us on Twitter">X (Twitter)</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-blue-400 text-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1" aria-label="Follow us on LinkedIn">LinkedIn</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-blue-400 text-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 rounded-md p-1" aria-label="Follow us on Facebook">Facebook</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div class="text-center text-gray-500 mt-8 pt-4 border-t border-gray-700">
+            <p>&copy; 2024 Your Company Name. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+        // Example JavaScript for the toggle button (existing)
+        const toggleButton = document.getElementById('toggleButton');
+        if (toggleButton) {
+            toggleButton.addEventListener('click', function() {
+                const isPressed = this.getAttribute('aria-pressed') === 'true';
+                this.setAttribute('aria-pressed', String(!isPressed));
+                this.textContent = isPressed ? 'Toggle State' : 'State Active!';
+            });
+        }
+
+        // JavaScript for the Accessible Modal Dialog (existing)
+        const openDialogButton = document.getElementById('openDialogButton');
+        const accessibleDialog = document.getElementById('accessibleDialog');
+        const closeDialogButton = document.getElementById('closeDialogButton');
+        const cancelDialogButton = document.getElementById('cancelDialogButton');
+        const confirmDialogButton = document.getElementById('confirmDialogButton');
+        let lastFocusedElement; // To store the element that had focus before the dialog opened
+
+        function openDialog() {
+            // Store the currently focused element
+            lastFocusedElement = document.activeElement;
+
+            // Show the dialog
+            accessibleDialog.classList.remove('hidden');
+            accessibleDialog.classList.add('is-open'); // For CSS animations
+
+            // Update aria-expanded on the open button
+            openDialogButton.setAttribute('aria-expanded', 'true');
+
+            // Set focus to the first interactive element inside the dialog (e.g., the close button)
+            closeDialogButton.focus();
+
+            // Add event listener for Escape key to close dialog
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        function closeDialog() {
+            // Hide the dialog
+            accessibleDialog.classList.remove('is-open'); // For CSS animations
+            accessibleDialog.classList.add('hidden');
+
+            // Update aria-expanded on the open button
+            openDialogButton.setAttribute('aria-expanded', 'false');
+
+            // Return focus to the element that opened the dialog
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+
+            // Remove event listener for Escape key
+            document.removeEventListener('keydown', handleEscapeKey);
+        }
+
+        function handleEscapeKey(event) {
+            if (event.key === 'Escape') {
+                closeDialog();
+            }
+        }
+
+        // Event listeners for opening and closing the dialog
+        if (openDialogButton) {
+            openDialogButton.addEventListener('click', openDialog);
+        }
+        if (closeDialogButton) {
+            closeDialogButton.addEventListener('click', closeDialog);
+        }
+        if (cancelDialogButton) {
+            cancelDialogButton.addEventListener('click', closeDialog); // For demo, confirms and closes
+        }
+        if (confirmDialogButton) {
+            confirmDialogButton.addEventListener('click', closeDialog); // For demo, confirms and closes
+        }
+
+        // JavaScript for Show/Hide Password functionality (existing)
+        const passwordInput = document.getElementById('authPassword');
+        const togglePasswordButton = document.getElementById('togglePasswordVisibility');
+
+        if (passwordInput && togglePasswordButton) {
+            togglePasswordButton.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                const isPressed = type === 'text';
+                this.setAttribute('aria-pressed', String(isPressed));
+                this.setAttribute('aria-label', isPressed ? 'Hide password as plain text.' : 'Show password as plain text.');
+
+                // Visually update the button text/icon (optional, for simple demo)
+                this.textContent = isPressed ? '🙈' : '👁️';
+            });
+        }
+
+        // JavaScript for Collapsible Navigation Menu (existing)
+        const navToggleButton = document.getElementById('navToggleButton');
+        const mainNavigationMenu = document.getElementById('mainNavigationMenu');
+
+        if (navToggleButton && mainNavigationMenu) {
+            navToggleButton.addEventListener('click', function() {
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', String(!isExpanded));
+                mainNavigationMenu.classList.toggle('hidden-nav-menu'); // Toggles display for small screens
+                mainNavigationMenu.setAttribute('aria-hidden', String(isExpanded)); // Hides from AT when collapsed
+            });
+
+            // Optional: Close menu on link click (for mobile experience)
+            mainNavigationMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (navToggleButton.getAttribute('aria-expanded') === 'true') {
+                        navToggleButton.click(); // Simulate click to close
+                    }
+                });
+            });
+
+            // Optional: Close menu if window resizes to desktop size
+            let mediaQuery = window.matchMedia('(min-width: 640px)'); // Tailwind's sm breakpoint
+            function handleMediaQueryChange(e) {
+                if (e.matches) { // If screen is large enough (sm breakpoint and up)
+                    mainNavigationMenu.classList.remove('hidden-nav-menu'); // Ensure menu is visible
+                    mainNavigationMenu.setAttribute('aria-hidden', 'false');
+                    navToggleButton.setAttribute('aria-expanded', 'false'); // Reset button state
+                    navToggleButton.classList.add('sm:hidden-nav-button'); // Hide the toggle button
+                } else { // If screen is smaller than sm breakpoint
+                    navToggleButton.classList.remove('sm:hidden-nav-button'); // Show the toggle button
+                }
+            }
+            // Initial check and listen for changes
+            handleMediaQueryChange(mediaQuery);
+            mediaQuery.addListener(handleMediaQueryChange);
+        }
+
+        // JavaScript for In-Page Search Functionality (existing, previously fixed)
+        const pageSearchForm = document.getElementById('pageSearchForm');
+        const siteSearchInput = document.getElementById('siteSearch');
+        const allSections = document.querySelectorAll('main > section.page-section'); // Select all main content sections
+        const searchResultsMessage = document.getElementById('searchResultsMessage');
+
+        if (pageSearchForm && siteSearchInput && allSections.length > 0 && searchResultsMessage) {
+            // Set initial state for screen readers
+            searchResultsMessage.textContent = ''; // Clear content initially
+            searchResultsMessage.setAttribute('aria-hidden', 'true'); // Hide from screen readers initially
+
+            pageSearchForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission (page reload)
+
+                const searchTerm = siteSearchInput.value.trim().toLowerCase();
+                let matchesFound = 0;
+                let firstMatchedSection = null; // To store the first section that matches
+
+                // Step 1: Temporarily turn off aria-live, clear content, and hide from AT
+                searchResultsMessage.setAttribute('aria-live', 'off');
+                searchResultsMessage.textContent = '';
+                searchResultsMessage.setAttribute('aria-hidden', 'true');
+                searchResultsMessage.classList.add('bg-yellow-100', 'text-yellow-800'); // Reset styling
+
+                // Use a short timeout to ensure screen reader registers the state changes
+                setTimeout(() => {
+                    if (searchTerm === '') {
+                        // If search term is empty, show all sections
+                        allSections.forEach(section => {
+                            section.style.display = 'block';
+                        });
+                        // No message needed for empty search, return aria-live to polite immediately
+                        searchResultsMessage.setAttribute('aria-live', 'polite');
+                        return; // Exit function
+                    }
+
+                    allSections.forEach(section => {
+                        const sectionText = section.textContent.toLowerCase();
+                        if (sectionText.includes(searchTerm)) {
+                            section.style.display = 'block'; // Show the section
+                            matchesFound++;
+                            if (!firstMatchedSection) { // Store the first found section
+                                firstMatchedSection = section;
+                            }
+                        } else {
+                            section.style.display = 'none'; // Hide the section
+                        }
+                    });
+
+                    // Step 2: Update message, make it visible/announced, and re-enable aria-live
+                    if (matchesFound > 0) {
+                        searchResultsMessage.textContent = `Found ${matchesFound} section(s) matching "${siteSearchInput.value}".`;
+                        searchResultsMessage.classList.remove('bg-red-100', 'text-red-800');
+                        searchResultsMessage.classList.add('bg-green-100', 'text-green-800');
+
+                        // NEW: Move focus to the first matched section's heading for immediate context
+                        if (firstMatchedSection) {
+                            const firstSectionHeading = firstMatchedSection.querySelector('h2');
+                            if (firstSectionHeading) {
+                                // Ensure the heading can receive programmatic focus without being in tab order
+                                if (!firstSectionHeading.hasAttribute('tabindex')) {
+                                    firstSectionHeading.setAttribute('tabindex', '-1');
+                                }
+                                firstSectionHeading.focus();
+                                // Announce that focus has moved (optional, but good for clarity)
+                                // A short delay might be needed for some screen readers to announce focus move and then content
+                                setTimeout(() => {
+                                     // This additional message helps confirm the focus shift after the initial results announcement.
+                                     // It's added to the live region, but should be announced secondary to the focus shift itself.
+                                     searchResultsMessage.textContent += ` Focus moved to the first result.`;
+                                }, 100); // Small delay to allow initial message/focus to be processed
+                            }
+                        }
+
+                    } else {
+                        searchResultsMessage.textContent = `No sections found matching "${siteSearchInput.value}".`;
+                        searchResultsMessage.classList.remove('bg-green-100', 'text-green-800');
+                        searchResultsMessage.classList.add('bg-red-100', 'text-red-800');
+                    }
+                    searchResultsMessage.setAttribute('aria-hidden', 'false'); // Make visible to screen readers
+                    searchResultsMessage.setAttribute('aria-live', 'polite'); // Re-enable politeness after update
+                }, 0); // A zero-delay timeout pushes the update to the end of the current task queue
+            });
+        }
+
+        // JavaScript for Accessible Tabs
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('[role="tab"]');
+            const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+            if (tabButtons.length > 0 && tabPanels.length > 0) {
+                function activateTab(index) {
+                    tabButtons.forEach((button, i) => {
+                        button.setAttribute('aria-selected', 'false');
+                        button.setAttribute('tabindex', '-1');
+                        // Ensure all active styling is removed before applying to the correct one
+                        button.classList.remove('border-blue-600', 'text-blue-700');
+                        button.classList.add('text-gray-700'); // Ensure inactive text color is set
+                    });
+                    
+                    // Activate the selected tab
+                    const selectedButton = tabButtons[index];
+                    selectedButton.setAttribute('aria-selected', 'true');
+                    selectedButton.setAttribute('tabindex', '0');
+                    selectedButton.classList.remove('text-gray-700'); // Remove inactive text color
+                    selectedButton.classList.add('border-blue-600', 'text-blue-700'); // Add active classes
+
+                    tabPanels.forEach((panel, i) => {
+                        if (i === index) {
+                            panel.hidden = false;
+                            panel.setAttribute('aria-hidden', 'false');
+                            //  FIX: Make the active panel part of the tab sequence
+                            panel.setAttribute('tabindex', '0');
+                        } else {
+                            panel.hidden = true;
+                            panel.setAttribute('aria-hidden', 'true');
+                             // FIX: Remove inactive panels from the tab sequence
+                            panel.removeAttribute('tabindex');
+                        }
+                    });
+                }
+
+                tabButtons.forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        activateTab(index);
+                    });
+
+                    button.addEventListener('keydown', (e) => {
+                        let currentTabIndex = Array.from(tabButtons).indexOf(e.target);
+                        let nextTabIndex = -1;
+
+                        switch (e.key) {
+                            case 'ArrowRight':
+                                nextTabIndex = (currentTabIndex + 1) % tabButtons.length;
+                                break;
+                            case 'ArrowLeft':
+                                nextTabIndex = (currentTabIndex - 1 + tabButtons.length) % tabButtons.length;
+                                break;
+                            case 'Home':
+                                nextTabIndex = 0;
+                                break;
+                            case 'End':
+                                nextTabIndex = tabButtons.length - 1;
+                                break;
+                            default:
+                                return; // Do nothing for other keys
+                        }
+
+                        if (nextTabIndex !== -1) {
+                            e.preventDefault(); // Prevent default browser behavior for arrow keys
+                            activateTab(nextTabIndex);
+                            tabButtons[nextTabIndex].focus(); // Move visual focus to the new tab
+                        }
+                    });
+                });
+
+                // Initialize first tab as active on load
+                activateTab(0);
+            }
+        });
+
+
+        // JavaScript for Accessible Carousel/Image Slider
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('imageCarousel');
+            if (carousel) {
+                const carouselTrack = document.getElementById('carouselTrack');
+                const slides = Array.from(carouselTrack.children);
+                const prevButton = document.getElementById('carouselPrev');
+                const nextButton = document.getElementById('carouselNext');
+                const playPauseButton = document.getElementById('carouselPlayPause');
+                const dotsContainer = carousel.querySelector('[aria-label="Slide indicators"]');
+                const dots = Array.from(dotsContainer.children);
+                const liveRegion = document.getElementById('carousel-live-region');
+
+                let currentIndex = 0;
+                let slideInterval;
+                const intervalTime = 5000; // 5 seconds for auto-play
+
+                function updateCarousel() {
+                    // Temporarily turn off aria-live, clear content, and hide from AT
+                    liveRegion.setAttribute('aria-live', 'off');
+                    liveRegion.textContent = '';
+                    // The aria-hidden on liveRegion is already set to true in HTML, no need to toggle again here
+
+                    setTimeout(() => {
+                        // Update track position for visual effect
+                        carouselTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+                        // Update ARIA attributes for screen readers
+                        slides.forEach((slide, index) => {
+                            if (index === currentIndex) {
+                                slide.setAttribute('aria-hidden', 'false');
+                            } else {
+                                slide.setAttribute('aria-hidden', 'true');
+                            }
+                        });
+
+                        // Update pagination dots
+                        dots.forEach((dot, index) => {
+                            if (index === currentIndex) {
+                                dot.classList.add('bg-blue-600');
+                                dot.classList.remove('bg-gray-400');
+                                dot.setAttribute('aria-current', 'true');
+                            } else {
+                                dot.classList.add('bg-gray-400');
+                                dot.classList.remove('bg-blue-600');
+                                dot.setAttribute('aria-current', 'false');
+                            }
+                        });
+
+                        // Get the alt text from the current slide's image to include in the announcement
+                        const currentImageAlt = slides[currentIndex].querySelector('img').alt;
+                        const currentSlideContent = slides[currentIndex].querySelector('p').textContent;
+
+                        // Announce slide change and a summary of its content for screen readers via live region
+                        liveRegion.textContent = `Slide ${currentIndex + 1} of ${slides.length}. ${currentImageAlt}. ${currentSlideContent}`;
+
+                        // Re-enable aria-live
+                        liveRegion.setAttribute('aria-live', 'polite');
+                    }, 0); // Zero-delay timeout
+                }
+
+                function showNextSlide() {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    updateCarousel();
+                }
+
+                function showPrevSlide() {
+                    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    updateCarousel();
+                }
+
+                function goToSlide(index) {
+                    currentIndex = index;
+                    updateCarousel();
+                }
+
+                function startAutoPlay() {
+                    if (!slideInterval) {
+                        slideInterval = setInterval(showNextSlide, intervalTime);
+                        // FIX: Removed setTimeout for immediate state update
+                        playPauseButton.textContent = '⏸️';
+                        playPauseButton.setAttribute('aria-label', 'Pause slideshow');
+                        playPauseButton.setAttribute('aria-pressed', 'true');
+                    }
+                }
+
+                function pauseAutoPlay() {
+                    clearInterval(slideInterval);
+                    slideInterval = null;
+                    // FIX: Removed setTimeout for immediate state update
+                    playPauseButton.textContent = '▶️';
+                    playPauseButton.setAttribute('aria-label', 'Play slideshow');
+                    playPauseButton.setAttribute('aria-pressed', 'false');
+                }
+
+                // Event Listeners
+                prevButton.addEventListener('click', () => {
+                    pauseAutoPlay(); // Pause on manual interaction
+                    showPrevSlide();
+                });
+                nextButton.addEventListener('click', () => {
+                    pauseAutoPlay(); // Pause on manual interaction
+                    showNextSlide();
+                });
+
+                playPauseButton.addEventListener('click', () => {
+                    if (slideInterval) {
+                        pauseAutoPlay();
+                    } else {
+                        startAutoPlay();
+                    }
+                });
+
+                dots.forEach((dot, index) => {
+                    dot.addEventListener('click', () => {
+                        pauseAutoPlay(); // Pause on manual interaction
+                        goToSlide(index);
+                    });
+                });
+
+                // Keyboard Navigation for Carousel
+                carousel.addEventListener('keydown', (e) => {
+                    if (document.activeElement.closest('#imageCarousel')) { // Only respond if focus is within the carousel
+                        switch (e.key) {
+                            case 'ArrowRight':
+                                e.preventDefault();
+                                pauseAutoPlay();
+                                showNextSlide();
+                                break;
+                            case 'ArrowLeft':
+                                e.preventDefault();
+                                pauseAutoPlay();
+                                showPrevSlide();
+                                break;
+                            case 'Home':
+                                e.preventDefault();
+                                pauseAutoPlay();
+                                goToSlide(0);
+                                break;
+                            case 'End':
+                                e.preventDefault();
+                                pauseAutoPlay();
+                                goToSlide(slides.length - 1);
+                                break;
+                            case ' ': // Spacebar for play/pause
+                            case 'Enter':
+                                if (e.target === playPauseButton) {
+                                    // Handled by the button's click listener
+                                } else {
+                                    // Treat Space/Enter on other elements as triggering relevant actions
+                                    // For example, if focus is on a slide's content, might open it
+                                }
+                                break;
+                        }
+                    }
+                });
+
+
+                // Initialize carousel
+                updateCarousel();
+                startAutoPlay(); // Start auto-play by default
+            }
+        });
+
+
+        // New JavaScript for Accessible Data Table with Sorting & Pagination
+        document.addEventListener('DOMContentLoaded', () => {
+            // Data for the table
+            const data = [{
+                name: "Python",
+                year: 1991,
+                salary: 110000
+            }, {
+                name: "JavaScript",
+                year: 1995,
+                salary: 112000
+            }, {
+                name: "Java",
+                year: 1995,
+                salary: 105000
+            }, {
+                name: "C++",
+                year: 1985,
+                salary: 95000
+            }, {
+                name: "Rust",
+                year: 2010,
+                salary: 130000
+            }, {
+                name: "Go",
+                year: 2009,
+                salary: 115000
+            }, {
+                name: "Swift",
+                year: 2014,
+                salary: 120000
+            }, {
+                name: "Ruby",
+                year: 1995,
+                salary: 100000
+            }];
+
+            // DOM elements
+            const tableBody = document.getElementById('tableBody');
+            const sortableHeaders = document.querySelectorAll('#sortable-table-heading + p + div th button');
+            const prevPageBtn = document.getElementById('prevPageBtn');
+            const nextPageBtn = document.getElementById('nextPageBtn');
+            const paginationInfo = document.getElementById('paginationInfo');
+            const tableStatus = document.getElementById('tableStatus');
+
+            // State variables
+            let currentData = [...data];
+            let sortDirection = 'none';
+            let sortColumn = null;
+            let currentPage = 1;
+            const itemsPerPage = 3;
+
+            // Function to render the table rows based on current data and page
+            function renderTable() {
+                // Determine the data to display for the current page
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const paginatedData = currentData.slice(start, end);
+
+                // Clear the table body
+                tableBody.innerHTML = '';
+
+                // Create and append rows for the current page
+                if (paginatedData.length > 0) {
+                    paginatedData.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td data-label="Language">${item.name}</td>
+                            <td data-label="Year">${item.year}</td>
+                            <td data-label="Avg. Salary">${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(item.salary)}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500 py-4">No data to display.</td></tr>';
+                }
+
+                // Update pagination controls
+                updatePagination();
+            }
+
+            // Function to update pagination state and controls
+            function updatePagination() {
+                const totalPages = Math.ceil(currentData.length / itemsPerPage);
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+                paginationInfo.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+
+                // Announce pagination change to screen readers
+                setTimeout(() => {
+                    const statusText = `Table view changed. Showing page ${currentPage} of ${totalPages || 1}.`;
+                    tableStatus.textContent = statusText;
+                }, 10);
+            }
+
+            // Function to handle sorting
+            function handleSort(column) {
+                // If clicking the same column, toggle the sort direction
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'ascending' ? 'descending' : 'ascending';
+                } else {
+                    // If clicking a new column, reset to ascending
+                    sortColumn = column;
+                    sortDirection = 'ascending';
+                }
+
+                // Sort the data array based on the selected column and direction
+                currentData.sort((a, b) => {
+                    const aValue = a[column];
+                    const bValue = b[column];
+                    if (aValue < bValue) return sortDirection === 'ascending' ? -1 : 1;
+                    if (aValue > bValue) return sortDirection === 'ascending' ? 1 : -1;
+                    return 0;
+                });
+                
+                // Reset to the first page after sorting
+                currentPage = 1;
+                
+                // Update ARIA attributes on all headers
+                sortableHeaders.forEach(header => {
+                    const sortBy = header.getAttribute('data-sort-by');
+                    if (sortBy === sortColumn) {
+                        header.parentElement.setAttribute('aria-sort', sortDirection);
+                        const icon = header.querySelector('.sort-icon');
+                        icon.textContent = sortDirection === 'ascending' ? '▲' : '▼';
+                    } else {
+                        header.parentElement.setAttribute('aria-sort', 'none');
+                        header.querySelector('.sort-icon').textContent = '';
+                    }
+                });
+
+                // Re-render table and announce sort change
+                renderTable();
+                setTimeout(() => {
+                    const statusText = `Table sorted by ${column} in ${sortDirection} order.`;
+                    tableStatus.textContent = statusText;
+                }, 10);
+            }
+
+            // Add event listeners to sortable headers
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    handleSort(header.getAttribute('data-sort-by'));
+                });
+            });
+
+            // Add event listeners for pagination buttons
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(currentData.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            
+            // Initial render
+            renderTable();
+        });
+
+        // New JavaScript for Accessible Autocomplete/Combobox
+        document.addEventListener('DOMContentLoaded', () => {
+            const fruitInput = document.getElementById('fruitInput');
+            const fruitList = document.getElementById('fruit-list');
+            const autocompleteStatus = document.getElementById('autocompleteStatus'); // Live region for announcements
+
+            const fruits = [
+                "Apple", "Apricot", "Avocado", "Banana", "Blackberry", "Blueberry", "Cherry",
+                "Coconut", "Date", "Dragonfruit", "Durian", "Elderberry", "Fig", "Grape",
+                "Guava", "Kiwi", "Lemon", "Lime", "Mango", "Melon", "Nectarine", "Orange",
+                "Papaya", "Peach", "Pear", "Pineapple", "Plum", "Pomegranate", "Raspberry",
+                "Strawberry", "Watermelon"
+            ];
+
+            let focusedSuggestionIndex = -1;
+
+            // Function to update the suggestion list
+            function updateSuggestions() {
+                const inputValue = fruitInput.value.toLowerCase();
+                fruitList.innerHTML = ''; // Clear previous suggestions
+                focusedSuggestionIndex = -1; // Reset focused index
+
+                if (inputValue.length === 0) {
+                    fruitList.classList.add('hidden');
+                    fruitInput.setAttribute('aria-expanded', 'false');
+                    autocompleteStatus.textContent = ''; // Clear status when no input
+                    return;
+                }
+
+                const filteredFruits = fruits.filter(fruit =>
+                    fruit.toLowerCase().includes(inputValue)
+                );
+
+                if (filteredFruits.length > 0) {
+                    fruitList.classList.remove('hidden');
+                    fruitInput.setAttribute('aria-expanded', 'true');
+
+                    filteredFruits.forEach((fruit, index) => {
+                        const li = document.createElement('li');
+                        li.textContent = fruit;
+                        li.setAttribute('role', 'option');
+                        li.setAttribute('id', `suggestion-${index}`); // Unique ID for aria-activedescendant
+                        li.classList.add('px-4', 'py-2', 'cursor-pointer', 'hover:bg-blue-100', 'focus:bg-blue-100');
+                        fruitList.appendChild(li);
+
+                        li.addEventListener('click', () => {
+                            selectSuggestion(fruit);
+                        });
+                    });
+
+                    // Announce number of suggestions
+                    setTimeout(() => {
+                        autocompleteStatus.textContent = `${filteredFruits.length} suggestions available. Use up and down arrow keys to navigate.`;
+                    }, 100); // Small delay to ensure input change is announced first
+                } else {
+                    fruitList.classList.add('hidden');
+                    fruitInput.setAttribute('aria-expanded', 'false');
+                    setTimeout(() => {
+                        autocompleteStatus.textContent = `No suggestions found for ${inputValue}.`;
+                    }, 100);
+                }
+            }
+
+            // Function to select a suggestion
+            function selectSuggestion(suggestion) {
+                fruitInput.value = suggestion;
+                fruitList.classList.add('hidden');
+                fruitInput.setAttribute('aria-expanded', 'false');
+                fruitInput.focus(); // Return focus to the input
+                autocompleteStatus.textContent = `${suggestion} selected.`;
+                fruitInput.setAttribute('aria-activedescendant', ''); // Clear active descendant
+                focusedSuggestionIndex = -1;
+            }
+
+            // Event listener for input changes
+            fruitInput.addEventListener('input', updateSuggestions);
+
+            // Event listener for keyboard navigation
+            fruitInput.addEventListener('keydown', (e) => {
+                const visibleSuggestions = Array.from(fruitList.querySelectorAll('li:not(.hidden)'));
+
+                if (visibleSuggestions.length === 0) return;
+
+                // Remove focus class from previously focused item
+                if (focusedSuggestionIndex !== -1) {
+                    visibleSuggestions[focusedSuggestionIndex].classList.remove('focused');
+                }
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault(); // Prevent cursor movement in input
+                        focusedSuggestionIndex = (focusedSuggestionIndex + 1) % visibleSuggestions.length;
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault(); // Prevent cursor movement in input
+                        focusedSuggestionIndex = (focusedSuggestionIndex - 1 + visibleSuggestions.length) % visibleSuggestions.length;
+                        break;
+                    case 'Enter':
+                        e.preventDefault(); // Prevent form submission
+                        if (focusedSuggestionIndex !== -1) {
+                            selectSuggestion(visibleSuggestions[focusedSuggestionIndex].textContent);
+                        } else {
+                            // If nothing is highlighted, but Enter is pressed, treat current input as selection
+                            selectSuggestion(fruitInput.value);
+                        }
+                        return; // Exit function after selection/submission
+                    case 'Escape':
+                        fruitList.classList.add('hidden');
+                        fruitInput.setAttribute('aria-expanded', 'false');
+                        fruitInput.setAttribute('aria-activedescendant', '');
+                        focusedSuggestionIndex = -1;
+                        autocompleteStatus.textContent = 'Suggestions dismissed.';
+                        return;
+                    case 'Home':
+                        e.preventDefault();
+                        focusedSuggestionIndex = 0;
+                        break;
+                    case 'End':
+                        e.preventDefault();
+                        focusedSuggestionIndex = visibleSuggestions.length - 1;
+                        break;
+                    default:
+                        return; // Do nothing for other keys
+                }
+
+                // Add focus class to newly focused item
+                visibleSuggestions[focusedSuggestionIndex].classList.add('focused');
+                
+                // Update aria-activedescendant on the input
+                fruitInput.setAttribute('aria-activedescendant', visibleSuggestions[focusedSuggestionIndex].id);
+                
+                // Scroll the focused item into view if necessary
+                visibleSuggestions[focusedSuggestionIndex].scrollIntoView({
+                    block: 'nearest'
+                });
+            });
+
+            // Handle clicking outside to close suggestions
+            document.addEventListener('click', (e) => {
+                if (!fruitInput.contains(e.target) && !fruitList.contains(e.target)) {
+                    fruitList.classList.add('hidden');
+                    fruitInput.setAttribute('aria-expanded', 'false');
+                    fruitInput.setAttribute('aria-activedescendant', '');
+                    focusedSuggestionIndex = -1;
+                }
+            });
+        });
+
+        // New JavaScript for Accessible Drag and Drop
+        document.addEventListener('DOMContentLoaded', () => {
+            const list1 = document.getElementById('list1');
+            const list2 = document.getElementById('list2');
+            const dragDropStatus = document.getElementById('dragDropStatus');
+
+            // FIX: Add instructions for the whole component and associate with headings
+            const dragDropContainer = document.querySelector('.drag-list-container');
+            const list1Label = document.getElementById('list1-label');
+            const list2Label = document.getElementById('list2-label');
+
+            if (dragDropContainer && list1Label && list2Label) {
+                // Create a single, hidden element for the instructions
+                const instructions = document.createElement('div');
+                instructions.id = 'drag-drop-instructions';
+                // The sr-only class is available from Tailwind CSS to hide visually
+                instructions.className = 'sr-only'; 
+                instructions.textContent = 'To move an item, press Space to grab it. Use the arrow keys to move it. Press Space again to drop it. Press Escape to cancel the move.';
+
+                // Add the instructions to the container so they are in the DOM
+                dragDropContainer.prepend(instructions);
+
+                // Associate the instructions with both list headings
+                list1Label.setAttribute('aria-describedby', 'drag-drop-instructions');
+                list2Label.setAttribute('aria-describedby', 'drag-drop-instructions');
+            }
+
+
+            let activeDraggedItem = null;
+            let originalParentList = null;
+            let originalNextSibling = null;
+
+            const initialItemsList1 = ['Item A1', 'Item A2', 'Item A3'];
+            const initialItemsList2 = ['Item B1', 'Item B2', 'Item B3'];
+
+            function createDraggableItem(text) {
+                const li = document.createElement('li');
+                li.textContent = text;
+                li.id = `drag-item-${Math.random().toString(36).substr(2, 9)}`;
+                li.className = 'drag-item';
+                li.setAttribute('draggable', 'true');
+                li.setAttribute('role', 'listitem');
+                li.setAttribute('tabindex', '0');
+                li.setAttribute('aria-grabbed', 'false');
+                
+                // FIX: Removed the repetitive aria-description from each item
+                
+                li.addEventListener('dragstart', handleDragStart);
+                li.addEventListener('dragend', handleDragEnd);
+                li.addEventListener('keydown', handleKeyboardDrag);
+
+                return li;
+            }
+
+            function populateLists() {
+                list1.innerHTML = '';
+                list2.innerHTML = '';
+                initialItemsList1.forEach(itemText => list1.appendChild(createDraggableItem(itemText)));
+                initialItemsList2.forEach(itemText => list2.appendChild(createDraggableItem(itemText)));
+            }
+
+            function handleDragStart(e) {
+                activeDraggedItem = e.target;
+                originalParentList = activeDraggedItem.parentElement;
+                e.dataTransfer.setData('text/plain', e.target.id);
+                e.dataTransfer.effectAllowed = 'move';
+                e.target.classList.add('dragging');
+                e.target.setAttribute('aria-grabbed', 'true');
+                dragDropStatus.textContent = `${e.target.textContent} grabbed.`;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                if (e.target.closest('.drag-list')) {
+                    const targetList = e.target.closest('.drag-list');
+                    if (!targetList.classList.contains('drag-over')) {
+                        targetList.classList.add('drag-over');
+                    }
+                    e.dataTransfer.dropEffect = 'move';
+                }
+            }
+
+            function handleDragLeave(e) {
+                const relatedTarget = e.relatedTarget;
+                if (e.target.classList.contains('drag-list') && (!relatedTarget || !relatedTarget.closest('.drag-list') || relatedTarget.closest('.drag-list') !== e.target)) {
+                    e.target.classList.remove('drag-over');
+                }
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                const data = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(data);
+                const targetList = e.target.closest('.drag-list');
+                if (draggedElement && targetList) {
+                    targetList.appendChild(draggedElement);
+                    dragDropStatus.textContent = `${draggedElement.textContent} moved to ${targetList.getAttribute('aria-labelledby').replace('-label', '')}.`;
+                }
+                document.querySelectorAll('.drag-list').forEach(list => list.classList.remove('drag-over'));
+            }
+
+            function handleDragEnd() {
+                if (activeDraggedItem) {
+                    activeDraggedItem.classList.remove('dragging');
+                    activeDraggedItem.setAttribute('aria-grabbed', 'false');
+                    activeDraggedItem = null;
+                    originalParentList = null;
+                }
+            }
+
+            list1.addEventListener('dragover', handleDragOver);
+            list1.addEventListener('dragleave', handleDragLeave);
+            list1.addEventListener('drop', handleDrop);
+            list2.addEventListener('dragover', handleDragOver);
+            list2.addEventListener('dragleave', handleDragLeave);
+            list2.addEventListener('drop', handleDrop);
+
+            function handleKeyboardDrag(e) {
+                const item = e.target;
+                const parentList = item.parentElement;
+                const allLists = [list1, list2];
+                const currentListIndex = allLists.indexOf(parentList);
+
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    if (item.getAttribute('aria-grabbed') === 'false') {
+                        item.setAttribute('aria-grabbed', 'true');
+                        item.classList.add('dragging');
+                        activeDraggedItem = item;
+                        originalParentList = parentList;
+                        originalNextSibling = item.nextElementSibling;
+                        dragDropStatus.textContent = `${item.textContent} grabbed.`;
+                        item.focus();
+                    } else if (activeDraggedItem && activeDraggedItem.id === item.id) {
+                        item.setAttribute('aria-grabbed', 'false');
+                        item.classList.remove('dragging');
+                        dragDropStatus.textContent = `${item.textContent} dropped into ${parentList.getAttribute('aria-labelledby').replace('-label', '')}.`;
+                        activeDraggedItem = null;
+                        originalParentList = null;
+                        originalNextSibling = null;
+                        item.focus();
+                    }
+                    return;
+                }
+
+                if (activeDraggedItem && activeDraggedItem.id === item.id) {
+                    let moved = false;
+                    let newParentList = parentList;
+                    
+                    switch (e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            if (item.nextElementSibling) {
+                                parentList.insertBefore(item, item.nextElementSibling.nextElementSibling);
+                                moved = true;
+                            }
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            if (item.previousElementSibling) {
+                                parentList.insertBefore(item, item.previousElementSibling);
+                                moved = true;
+                            }
+                            break;
+                        case 'ArrowRight':
+                             e.preventDefault();
+                             if (currentListIndex < allLists.length - 1) {
+                                 newParentList = allLists[currentListIndex + 1];
+                                 newParentList.appendChild(item);
+                                 moved = true;
+                             }
+                             break;
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            if (currentListIndex > 0) {
+                                newParentList = allLists[currentListIndex - 1];
+                                newParentList.appendChild(item);
+                                moved = true;
+                            }
+                            break;
+                        case 'Escape':
+                            e.preventDefault();
+                            if (activeDraggedItem && originalParentList) {
+                                originalParentList.insertBefore(activeDraggedItem, originalNextSibling);
+                                activeDraggedItem.setAttribute('aria-grabbed', 'false');
+                                activeDraggedItem.classList.remove('dragging');
+                                dragDropStatus.textContent = `${activeDraggedItem.textContent} drag cancelled.`;
+                                activeDraggedItem.focus();
+                                activeDraggedItem = null;
+                                originalParentList = null;
+                                originalNextSibling = null;
+                            }
+                            return;
+                    }
+
+                    if (moved) {
+                        const newParentListName = newParentList.getAttribute('aria-labelledby').replace('-label', '');
+                        dragDropStatus.textContent = `${item.textContent} moved to ${newParentListName}.`;
+                        item.focus();
+                    }
+                }
+            }
+            
+            populateLists();
+        });
+
+        // New JavaScript for Accessible Charts/Graphs
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartData = [
+                { month: 'January', sales: 150 },
+                { month: 'February', sales: 170 },
+                { month: 'March', sales: 220 },
+                { month: 'April', sales: 180 }
+            ];
+
+            const chartSvg = document.getElementById('salesChart');
+            const chartStatus = document.getElementById('chartStatus');
+            const bars = Array.from(chartSvg.querySelectorAll('.chart-bar')); // Convert to Array for easier indexing
+
+            const svgWidth = 400;
+            const svgHeight = 200;
+            const barWidth = 50;
+            const yAxisStart = 180; // Y-coordinate for the bottom of the bars (0 sales)
+            const maxSalesValue = 250; // Max value on Y-axis for scaling
+            const scaleFactor = (yAxisStart - 20) / maxSalesValue; // Scale height (from y=20 to y=180)
+
+            let currentFocusedBarIndex = 0; // Keep track of the currently focused bar for roving tabindex
+
+            // Function to animate bars and set initial positions
+            function animateBars() {
+                bars.forEach((bar, index) => {
+                    const sales = parseInt(bar.dataset.value);
+                    const barHeight = sales * scaleFactor;
+                    const barY = yAxisStart - barHeight;
+
+                    // Set initial position for animation
+                    bar.setAttribute('y', yAxisStart);
+                    bar.setAttribute('height', '0');
+
+                    // Animate to final position
+                    bar.style.transition = 'height 1s ease-out, y 1s ease-out, fill 0.2s ease-in-out';
+                    setTimeout(() => {
+                        bar.setAttribute('y', barY);
+                        bar.setAttribute('height', barHeight);
+                    }, 100 * index); // Stagger animation
+                });
+            }
+
+            // Function to update focus and aria-attributes for roving tabindex
+            function updateBarFocus(newIndex) {
+                // Remove tabindex from previously focused bar
+                if (bars[currentFocusedBarIndex]) {
+                    bars[currentFocusedBarIndex].setAttribute('tabindex', '-1');
+                }
+
+                // Set new focused bar
+                currentFocusedBarIndex = (newIndex + bars.length) % bars.length; // Ensure index wraps around
+                const newFocusedBar = bars[currentFocusedBarIndex];
+
+                newFocusedBar.setAttribute('tabindex', '0');
+                newFocusedBar.focus(); // Set programmatic focus
+
+                // Announce current bar details
+                const month = newFocusedBar.dataset.month;
+                const value = newFocusedBar.dataset.value;
+                chartStatus.textContent = `Chart: Sales for ${month}: ₹${value}.`;
+            }
+
+            // Set initial tabindex for roving tabindex
+            bars.forEach((bar, index) => {
+                if (index === 0) {
+                    bar.setAttribute('tabindex', '0'); // First bar is initially tabbable
+                } else {
+                    bar.setAttribute('tabindex', '-1'); // Others are not directly tabbable
+                }
+            });
+
+            // Add keyboard navigation to the SVG for roving tabindex
+            chartSvg.addEventListener('keydown', (e) => {
+                if (document.activeElement === chartSvg || bars.includes(document.activeElement)) {
+                    let nextIndex = currentFocusedBarIndex;
+
+                    switch (e.key) {
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            nextIndex++;
+                            break;
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            nextIndex--;
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            nextIndex = 0;
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            nextIndex = bars.length - 1;
+                            break;
+                        default:
+                            return; // Do nothing for other keys
+                    }
+                    updateBarFocus(nextIndex);
+                }
+            });
+
+            // When the SVG itself receives focus, ensure the first bar is focused.
+            // This handles direct tabbing into the chart section.
+            chartSvg.addEventListener('focus', () => {
+                // If focus lands on the SVG itself, immediately shift it to the first bar
+                // unless a bar is already focused (e.g., from internal navigation).
+                if (!bars.some(bar => bar === document.activeElement)) {
+                    updateBarFocus(0); // Focus the first bar
+                }
+            });
+
+
+            // Call animation on load
+            animateBars();
+        });
+
+// New JavaScript for Accessible Accordion
+        const accordionGroup = document.getElementById('accordionGroup');
+        if (accordionGroup) {
+            const accordionButtons = Array.from(accordionGroup.querySelectorAll('.accordion-button'));
+
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const isExpanded = button.getAttribute('aria-expanded') === 'true';
+                    const panel = document.getElementById(button.getAttribute('aria-controls'));
+
+                    button.setAttribute('aria-expanded', !isExpanded);
+                    panel.hidden = isExpanded;
+                });
+            });
+
+            accordionGroup.addEventListener('keydown', (e) => {
+                const activeElement = document.activeElement;
+                if (!activeElement.matches('.accordion-button')) return;
+
+                const currentIndex = accordionButtons.indexOf(activeElement);
+                let nextIndex = -1;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    nextIndex = (currentIndex + 1) % accordionButtons.length;
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    nextIndex = (currentIndex - 1 + accordionButtons.length) % accordionButtons.length;
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    nextIndex = 0;
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    nextIndex = accordionButtons.length - 1;
+                }
+
+                if (nextIndex !== -1) {
+                    accordionButtons[nextIndex].focus();
+                }
+            });
+        }
+// New JavaScript for Toast Notification
+        const showToastBtn = document.getElementById('showToastBtn');
+        const toastContainer = document.getElementById('toastContainer');
+
+        if (showToastBtn && toastContainer) {
+            let toastTimeout;
+            
+            function showToast(message) {
+                // Clear any existing message and timeout
+                clearTimeout(toastTimeout);
+                toastContainer.textContent = '';
+
+                // Add new message and make visible
+                toastContainer.textContent = message;
+                toastContainer.classList.add('visible');
+
+                // Set a timeout to hide the toast after a delay
+                toastTimeout = setTimeout(() => {
+                    toastContainer.classList.remove('visible');
+                }, 5000); // Hide after 5 seconds
+            }
+
+            showToastBtn.addEventListener('click', () => {
+                showToast('✅ Success! Your action was completed.');
+            });
+        }
+// New JavaScript for Live Form Validation
+        const validationForm = document.getElementById('validationForm');
+        if (validationForm) {
+            validationForm.addEventListener('submit', (e) => {
+                // Clear all previous errors
+                const errorMessages = validationForm.querySelectorAll('.error-message');
+                errorMessages.forEach(msg => msg.textContent = '');
+                const formInputs = validationForm.querySelectorAll('input[required]');
+                formInputs.forEach(input => {
+                    input.removeAttribute('aria-invalid');
+                    input.removeAttribute('aria-describedby');
+                });
+                const errorSummary = document.getElementById('errorSummary');
+                const errorSummaryList = document.getElementById('errorSummaryList');
+                errorSummary.classList.add('hidden');
+                errorSummaryList.innerHTML = '';
+                
+                let errors = [];
+                let firstErrorField = null;
+
+                // --- Validation Logic ---
+                const nameInput = document.getElementById('regName');
+                if (nameInput.value.trim() === '') {
+                    errors.push({
+                        field: nameInput,
+                        message: 'Name is required.',
+                        errorId: 'nameError'
+                    });
+                }
+                
+                const emailInput = document.getElementById('regEmail');
+                if (emailInput.value.trim() === '') {
+                    errors.push({
+                        field: emailInput,
+                        message: 'Email is required.',
+                        errorId: 'emailError'
+                    });
+                } else if (!/^\S+@\S+\.\S+$/.test(emailInput.value)) {
+                    errors.push({
+                        field: emailInput,
+                        message: 'Please enter a valid email address.',
+                        errorId: 'emailError'
+                    });
+                }
+
+                // --- Error Handling ---
+                if (errors.length > 0) {
+                    e.preventDefault(); // Prevent form submission
+                    
+                    errors.forEach((error, index) => {
+                        // Display inline error
+                        const errorDiv = document.getElementById(error.errorId);
+                        errorDiv.textContent = error.message;
+
+                        // Set ARIA attributes on the input
+                        error.field.setAttribute('aria-invalid', 'true');
+                        error.field.setAttribute('aria-describedby', error.errorId);
+
+                        // Add to error summary list
+                        const li = document.createElement('li');
+                        const link = document.createElement('a');
+                        link.href = `#${error.field.id}`;
+                        link.textContent = error.message;
+                        link.onclick = (event) => {
+                            event.preventDefault();
+                            error.field.focus();
+                        };
+                        li.appendChild(link);
+                        errorSummaryList.appendChild(li);
+
+                        // Keep track of the first error field to focus on
+                        if (index === 0) {
+                            firstErrorField = error.field;
+                        }
+                    });
+
+                    // Show summary and move focus to it
+                    errorSummary.classList.remove('hidden');
+                    errorSummary.focus();
+                }
+            });
+        }
+// New JavaScript for Accessible Dropdown Menu
+        const menuContainer = document.getElementById('menuContainer');
+        if (menuContainer) {
+            const menuButton = document.getElementById('menuButton');
+            const menu = document.getElementById('menu');
+            const menuItems = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+            let activeIndex = -1;
+
+            function toggleMenu(isOpen) {
+                menu.classList.toggle('hidden', !isOpen);
+                menuButton.setAttribute('aria-expanded', String(isOpen));
+                if (isOpen) {
+                    activeIndex = 0;
+                    menuItems[activeIndex].focus();
+                } else {
+                    activeIndex = -1;
+                    menuButton.focus();
+                }
+            }
+
+            menuButton.addEventListener('click', () => {
+                const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+                toggleMenu(!isExpanded);
+            });
+
+            menuButton.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleMenu(true);
+                }
+            });
+
+            menu.addEventListener('keydown', (e) => {
+                const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+                if (!isExpanded) return;
+
+                switch (e.key) {
+                    case 'Escape':
+                        e.preventDefault();
+                        toggleMenu(false);
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        activeIndex = (activeIndex + 1) % menuItems.length;
+                        menuItems[activeIndex].focus();
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        activeIndex = (activeIndex - 1 + menuItems.length) % menuItems.length;
+                        menuItems[activeIndex].focus();
+                        break;
+                    case 'Home':
+                        e.preventDefault();
+                        activeIndex = 0;
+                        menuItems[activeIndex].focus();
+                        break;
+                    case 'End':
+                        e.preventDefault();
+                        activeIndex = menuItems.length - 1;
+                        menuItems[activeIndex].focus();
+                        break;
+                    case 'Tab':
+                        e.preventDefault(); // Trap focus
+                        break;
+                }
+            });
+
+            // Close menu if user clicks outside of it
+            document.addEventListener('click', (e) => {
+                if (!menuContainer.contains(e.target)) {
+                    const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+                    if (isExpanded) {
+                        toggleMenu(false);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
